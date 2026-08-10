@@ -2,8 +2,8 @@ package com.bracketzone.touchassistant.ui
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -35,24 +35,22 @@ class AppPickerActivity : Activity() {
 
         val pm = packageManager
 
-        // Retrieve non-system apps that have a launcher intent
-        val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { appInfo ->
-                val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                val isUpdatedSystemApp = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-                val isUserApp = !isSystemApp && !isUpdatedSystemApp
+        // Query launcher activities directly to obtain accurate icons for system apps
+        val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
 
-                isUserApp && pm.getLaunchIntentForPackage(appInfo.packageName) != null
-            }
-            .sortedBy { pm.getApplicationLabel(it).toString().lowercase() }
+        val launchableApps = pm.queryIntentActivities(mainIntent, 0)
+            .distinctBy { it.activityInfo.packageName }
+            .sortedBy { it.loadLabel(pm).toString().lowercase() }
 
         val recyclerView = findViewById<RecyclerView>(R.id.actionsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = AppsAdapter(installedApps)
+        recyclerView.adapter = AppsAdapter(launchableApps)
     }
 
     private inner class AppsAdapter(
-        private val appsList: List<ApplicationInfo>
+        private val appsList: List<ResolveInfo>
     ) : RecyclerView.Adapter<AppsAdapter.AppViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppViewHolder {
@@ -73,13 +71,19 @@ class AppPickerActivity : Activity() {
             private val desc: TextView = itemView.findViewById(R.id.actionDescription)
             private val checkmark: ImageView = itemView.findViewById(R.id.selectedCheckmark)
 
-            fun bind(appInfo: ApplicationInfo) {
+            fun bind(resolveInfo: ResolveInfo) {
                 val pm = packageManager
-                title.text = pm.getApplicationLabel(appInfo)
-                desc.text = appInfo.packageName
-                icon.setImageDrawable(pm.getApplicationIcon(appInfo))
+                val packageName = resolveInfo.activityInfo.packageName
 
-                val isSelected = (appInfo.packageName == currentSelectedPackage)
+                title.text = resolveInfo.loadLabel(pm)
+                desc.text = packageName
+
+                // Reset tinting and load the launcher activity icon directly
+                icon.imageTintList = null
+                icon.clearColorFilter()
+                icon.setImageDrawable(resolveInfo.loadIcon(pm))
+
+                val isSelected = (packageName == currentSelectedPackage)
                 checkmark.visibility = if (isSelected) View.VISIBLE else View.GONE
 
                 if (isSelected) {
@@ -90,7 +94,7 @@ class AppPickerActivity : Activity() {
 
                 itemView.setOnClickListener {
                     val resultIntent = Intent().apply {
-                        putExtra(EXTRA_RESULT_PACKAGE, appInfo.packageName)
+                        putExtra(EXTRA_RESULT_PACKAGE, packageName)
                     }
                     setResult(RESULT_OK, resultIntent)
                     finish()
