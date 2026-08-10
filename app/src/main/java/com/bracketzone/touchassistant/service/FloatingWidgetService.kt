@@ -10,6 +10,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
@@ -17,11 +18,13 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.view.DisplayCutout
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
@@ -140,7 +143,28 @@ class FloatingWidgetService : Service() {
 
         windowManager.addView(floatingView, windowParams)
 
+        floatingView.post {
+            clampFloatingViewPosition()
+            snapToNearestEdge()
+        }
+
         startEnterAnimation()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        relativeMenuManager.dismiss()
+
+        if (::floatingView.isInitialized && floatingView.isAttachedToWindow) {
+            restoreFromIdle()
+            edgeAnimator?.cancel()
+
+            clampFloatingViewPosition()
+            snapToNearestEdge()
+
+            scheduleIdleHide()
+        }
     }
 
     private fun startEnterAnimation() {
@@ -240,6 +264,9 @@ class FloatingWidgetService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
+        private const val CUTOUT_NONE = 0
+        private const val CUTOUT_LEFT = 1
+        private const val CUTOUT_RIGHT = 2
     }
 
     private fun handleTouch(event: MotionEvent): Boolean {
@@ -303,26 +330,80 @@ class FloatingWidgetService : Service() {
         return false
     }
 
-    private fun clampFloatingViewPosition() {
-        val screenWidth = resources.displayMetrics.widthPixels
-        val screenHeight = resources.displayMetrics.heightPixels
-        val viewWidth = floatingView.width
-        val viewHeight = floatingView.height
+    private fun getStatusBarHeight(): Int {
+        var statusBarHeight = 0
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowMetrics = windowManager.currentWindowMetrics
+            val insets = windowMetrics.windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()
+            )
+            statusBarHeight = insets.top
+        }
 
+        if (statusBarHeight == 0) {
+            val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+            if (resourceId > 0) {
+                statusBarHeight = resources.getDimensionPixelSize(resourceId)
+            }
+        }
+
+        return statusBarHeight
+    }
+
+    /**
+     * Determines whether a display cutout / camera notch exists on the left or right side of the screen.
+     */
+    private fun getCameraCutoutSide(): Int {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val cutout: DisplayCutout? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                windowManager.currentWindowMetrics.windowInsets.displayCutout
+            } else if (::floatingView.isInitialized && floatingView.isAttachedToWindow) {
+                floatingView.rootWindowInsets?.displayCutout
+            } else {
+                null
+            }
+
+            if (cutout != null) {
+                if (cutout.safeInsetLeft > 0) return CUTOUT_LEFT
+                if (cutout.safeInsetRight > 0) return CUTOUT_RIGHT
+            }
+        }
+        return CUTOUT_NONE
+    }
+
+    private fun clampFloatingViewPosition() {
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val screenHeight = displayMetrics.heightPixels
+
+        val viewWidth = if (floatingView.width > 0) floatingView.width else dp(56)
+        val viewHeight = if (floatingView.height > 0) floatingView.height else dp(56)
+
+        val minTopY = getStatusBarHeight()
         val maxX = (screenWidth - viewWidth).coerceAtLeast(0)
-        val maxY = (screenHeight - viewHeight).coerceAtLeast(0)
+        val maxY = (screenHeight - viewHeight).coerceAtLeast(minTopY)
 
         windowParams.x = windowParams.x.coerceIn(0, maxX)
-        windowParams.y = windowParams.y.coerceIn(0, maxY)
+        windowParams.y = windowParams.y.coerceIn(minTopY, maxY)
     }
 
     private fun snapToNearestEdge() {
         val screenWidth = resources.displayMetrics.widthPixels
-        val viewWidth = floatingView.width
+        val viewWidth = if (floatingView.width > 0) floatingView.width else dp(56)
         val currentX = windowParams.x
         val maxX = (screenWidth - viewWidth).coerceAtLeast(0)
 
-        val targetX = if (currentX + viewWidth / 2 < screenWidth / 2) 0 else maxX
+        val cutoutSide = getCameraCutoutSide()
+
+        // Force the target edge to avoid the camera notch side in landscape
+        val targetX = when (cutoutSide) {
+            CUTOUT_LEFT -> maxX // Camera is on the left -> force floating button to the RIGHT
+            CUTOUT_RIGHT -> 0   // Camera is on the right -> force floating button to the LEFT
+            else -> {
+                // Default snapping logic if no notch is present on the sides
+                if (currentX + viewWidth / 2 < screenWidth / 2) 0 else maxX
+            }
+        }
 
         edgeAnimator?.cancel()
         edgeAnimator = ValueAnimator.ofInt(currentX, targetX).apply {
@@ -331,7 +412,9 @@ class FloatingWidgetService : Service() {
             addUpdateListener { animator ->
                 windowParams.x = animator.animatedValue as Int
                 floatingView.translationX = 0f
-                windowManager.updateViewLayout(floatingView, windowParams)
+                if (floatingView.isAttachedToWindow) {
+                    windowManager.updateViewLayout(floatingView, windowParams)
+                }
             }
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
