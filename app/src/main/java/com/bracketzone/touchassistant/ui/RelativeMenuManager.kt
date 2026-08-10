@@ -61,7 +61,6 @@ class RelativeMenuManager(
         val menuY = (targetCenterY - (menuHeight / 2))
             .coerceIn(dp(16), (screenHeight - menuHeight - dp(16)).coerceAtLeast(dp(16)))
 
-        // 1. Fullscreen transparent wrapper to intercept outside taps seamlessly
         val overlay = FrameLayout(context).apply {
             setBackgroundColor(Color.TRANSPARENT)
             setOnTouchListener { _, event ->
@@ -75,7 +74,6 @@ class RelativeMenuManager(
         }
         rootOverlayView = overlay
 
-        // 2. The menu view placed inside the fullscreen overlay
         val container = createMenuView()
         menuContainer = container
 
@@ -85,11 +83,9 @@ class RelativeMenuManager(
             topMargin = menuY
         }
 
-        // Prevent touches on the menu card itself from dismissing the menu
         container.setOnTouchListener { _, _ -> true }
         overlay.addView(container, containerParams)
 
-        // Anchor scale transformations directly to the button center
         val pivotXInMenu = (targetCenterX - menuX).toFloat().coerceIn(0f, menuWidth.toFloat())
         val pivotYInMenu = (targetCenterY - menuY).toFloat().coerceIn(0f, menuHeight.toFloat())
 
@@ -113,7 +109,6 @@ class RelativeMenuManager(
 
         windowManager.addView(overlay, windowParams)
 
-        // Hide floating button & run entry animation
         anchorFloatingButton?.visibility = View.INVISIBLE
         animateExpandIn(container)
     }
@@ -230,35 +225,42 @@ class RelativeMenuManager(
         }
 
         override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
-            val pageActions = menuPreferences.getPageActions(position)
-            holder.bind(pageActions)
+            holder.bindPage(position)
         }
 
         inner class PageViewHolder(private val grid: GridLayout) : RecyclerView.ViewHolder(grid) {
-            fun bind(actions: List<AssistantAction>) {
+            fun bindPage(pageIndex: Int) {
                 grid.removeAllViews()
 
-                for (action in actions) {
-                    val itemView = createMenuItem(action)
-                    grid.addView(itemView)
+                if (pageIndex == 0) {
+                    val actions = menuPreferences.getPageActions(0)
+                    for (action in actions) {
+                        val itemView = createActionItem(action)
+                        grid.addView(itemView)
+                    }
+                } else {
+                    val appPackages = menuPreferences.getPageAppPackages()
+                    for (packageName in appPackages) {
+                        val itemView = createAppItem(packageName)
+                        grid.addView(itemView)
+                    }
                 }
             }
         }
     }
 
-    private fun createMenuItem(action: AssistantAction): View {
+    private fun createActionItem(action: AssistantAction): View {
         return LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setPadding(dp(4), dp(4), dp(4), dp(4))
 
-            val params = GridLayout.LayoutParams().apply {
+            layoutParams = GridLayout.LayoutParams().apply {
                 width = 0
                 height = 0
                 columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
             }
-            layoutParams = params
 
             val icon = ImageView(context).apply {
                 setImageResource(getIconForAction(action))
@@ -280,6 +282,61 @@ class RelativeMenuManager(
                     onActionSelected(action)
                 }
             }
+        }
+    }
+
+    private fun createAppItem(packageName: String?): View {
+        val pm = context.packageManager
+
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+
+            layoutParams = GridLayout.LayoutParams().apply {
+                width = 0
+                height = 0
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+            }
+
+            val iconView = ImageView(context)
+            val textView = TextView(context).apply {
+                textSize = 9f
+                gravity = Gravity.CENTER
+                maxLines = 1
+            }
+
+            if (!packageName.isNullOrEmpty()) {
+                try {
+                    val appInfo = pm.getApplicationInfo(packageName, 0)
+                    iconView.setImageDrawable(pm.getApplicationIcon(appInfo))
+                    textView.text = pm.getApplicationLabel(appInfo)
+                    textView.setTextColor(Color.WHITE)
+
+                    setOnClickListener {
+                        dismiss()
+                        val launchIntent = pm.getLaunchIntentForPackage(packageName)
+                        if (launchIntent != null) {
+                            launchIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(launchIntent)
+                        }
+                    }
+                } catch (e: Exception) {
+                    iconView.setImageResource(android.R.drawable.ic_menu_help)
+                    iconView.setColorFilter(Color.GRAY)
+                    textView.text = "None"
+                    textView.setTextColor(Color.GRAY)
+                }
+            } else {
+                iconView.setImageResource(android.R.drawable.ic_menu_add)
+                iconView.setColorFilter(Color.GRAY)
+                textView.text = "Empty"
+                textView.setTextColor(Color.GRAY)
+            }
+
+            addView(iconView, LinearLayout.LayoutParams(dp(24), dp(24)))
+            addView(textView)
         }
     }
 

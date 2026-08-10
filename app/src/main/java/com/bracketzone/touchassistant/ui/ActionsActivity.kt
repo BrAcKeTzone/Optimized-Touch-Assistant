@@ -26,7 +26,8 @@ class ActionsActivity : Activity() {
         private const val REQUEST_SINGLE_TAP = 1001
         private const val REQUEST_DOUBLE_TAP = 1002
         private const val REQUEST_LONG_PRESS = 1003
-        private const val REQUEST_MENU_SLOT = 2000
+        private const val REQUEST_ACTION_SLOT = 2000
+        private const val REQUEST_APP_SLOT = 2001
     }
 
     private lateinit var gesturePreferences: GesturePreferences
@@ -38,7 +39,6 @@ class ActionsActivity : Activity() {
     private lateinit var pageIndicatorText: TextView
     private lateinit var menuViewPager: ViewPager2
 
-    private var pendingPage: Int = -1
     private var pendingSlot: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,15 +61,15 @@ class ActionsActivity : Activity() {
 
     private fun setupGestureButtons() {
         findViewById<View>(R.id.singleTapButton).setOnClickListener {
-            openPicker("Single Tap", gesturePreferences.getSingleTapAction(), REQUEST_SINGLE_TAP)
+            openActionPicker("Single Tap", gesturePreferences.getSingleTapAction(), REQUEST_SINGLE_TAP)
         }
 
         findViewById<View>(R.id.doubleTapButton).setOnClickListener {
-            openPicker("Double Tap", gesturePreferences.getDoubleTapAction(), REQUEST_DOUBLE_TAP)
+            openActionPicker("Double Tap", gesturePreferences.getDoubleTapAction(), REQUEST_DOUBLE_TAP)
         }
 
         findViewById<View>(R.id.longPressButton).setOnClickListener {
-            openPicker("Long Press", gesturePreferences.getLongPressAction(), REQUEST_LONG_PRESS)
+            openActionPicker("Long Press", gesturePreferences.getLongPressAction(), REQUEST_LONG_PRESS)
         }
     }
 
@@ -83,10 +83,17 @@ class ActionsActivity : Activity() {
         })
     }
 
-    private fun openPicker(title: String, currentAction: AssistantAction, requestCode: Int) {
+    private fun openActionPicker(title: String, currentAction: AssistantAction, requestCode: Int) {
         val intent = Intent(this, ActionPickerActivity::class.java).apply {
             putExtra(ActionPickerActivity.EXTRA_GESTURE_NAME, title)
             putExtra(ActionPickerActivity.EXTRA_SELECTED_ACTION, currentAction.name)
+        }
+        startActivityForResult(intent, requestCode)
+    }
+
+    private fun openAppPicker(selectedPackage: String?, requestCode: Int) {
+        val intent = Intent(this, AppPickerActivity::class.java).apply {
+            putExtra(AppPickerActivity.EXTRA_SELECTED_PACKAGE, selectedPackage)
         }
         startActivityForResult(intent, requestCode)
     }
@@ -95,25 +102,37 @@ class ActionsActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK && data != null) {
-            val actionName = data.getStringExtra(ActionPickerActivity.EXTRA_RESULT_ACTION) ?: return
-            val action = try { AssistantAction.valueOf(actionName) } catch (e: Exception) { return }
-
             when (requestCode) {
                 REQUEST_SINGLE_TAP -> {
+                    val actionName = data.getStringExtra(ActionPickerActivity.EXTRA_RESULT_ACTION) ?: return
+                    val action = try { AssistantAction.valueOf(actionName) } catch (e: Exception) { return }
                     gesturePreferences.setSingleTapAction(action)
                     updateGestureLabels()
                 }
                 REQUEST_DOUBLE_TAP -> {
+                    val actionName = data.getStringExtra(ActionPickerActivity.EXTRA_RESULT_ACTION) ?: return
+                    val action = try { AssistantAction.valueOf(actionName) } catch (e: Exception) { return }
                     gesturePreferences.setDoubleTapAction(action)
                     updateGestureLabels()
                 }
                 REQUEST_LONG_PRESS -> {
+                    val actionName = data.getStringExtra(ActionPickerActivity.EXTRA_RESULT_ACTION) ?: return
+                    val action = try { AssistantAction.valueOf(actionName) } catch (e: Exception) { return }
                     gesturePreferences.setLongPressAction(action)
                     updateGestureLabels()
                 }
-                REQUEST_MENU_SLOT -> {
-                    if (pendingPage != -1 && pendingSlot != -1) {
-                        menuPreferences.setSlotAction(pendingPage, pendingSlot, action)
+                REQUEST_ACTION_SLOT -> {
+                    val actionName = data.getStringExtra(ActionPickerActivity.EXTRA_RESULT_ACTION) ?: return
+                    val action = try { AssistantAction.valueOf(actionName) } catch (e: Exception) { return }
+                    if (pendingSlot != -1) {
+                        menuPreferences.setSlotAction(0, pendingSlot, action)
+                        setupMenuGridPages()
+                    }
+                }
+                REQUEST_APP_SLOT -> {
+                    val pkg = data.getStringExtra(AppPickerActivity.EXTRA_RESULT_PACKAGE)
+                    if (pendingSlot != -1) {
+                        menuPreferences.setSlotAppPackage(pendingSlot, pkg)
                         setupMenuGridPages()
                     }
                 }
@@ -129,7 +148,7 @@ class ActionsActivity : Activity() {
 
     private inner class MenuGridPagesAdapter : RecyclerView.Adapter<MenuGridPagesAdapter.PageViewHolder>() {
 
-        override fun getItemCount(): Int = 2 // 2 scrollable pages
+        override fun getItemCount(): Int = 2
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
             val view = LayoutInflater.from(parent.context)
@@ -138,22 +157,31 @@ class ActionsActivity : Activity() {
         }
 
         override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
-            holder.bind(position, menuPreferences.getPageActions(position))
+            holder.bind(position)
         }
 
         inner class PageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val gridLayout: GridLayout = itemView.findViewById(R.id.gridPageLayout)
 
-            fun bind(pageIndex: Int, actions: List<AssistantAction>) {
+            fun bind(pageIndex: Int) {
                 gridLayout.removeAllViews()
 
-                for ((slotIndex, action) in actions.withIndex()) {
-                    val cellView = createGridCell(pageIndex, slotIndex, action)
-                    gridLayout.addView(cellView)
+                if (pageIndex == 0) {
+                    val actions = menuPreferences.getPageActions(0)
+                    for ((slotIndex, action) in actions.withIndex()) {
+                        val cellView = createActionGridCell(slotIndex, action)
+                        gridLayout.addView(cellView)
+                    }
+                } else {
+                    val appPackages = menuPreferences.getPageAppPackages()
+                    for ((slotIndex, pkg) in appPackages.withIndex()) {
+                        val cellView = createAppGridCell(slotIndex, pkg)
+                        gridLayout.addView(cellView)
+                    }
                 }
             }
 
-            private fun createGridCell(pageIndex: Int, slotIndex: Int, action: AssistantAction): View {
+            private fun createActionGridCell(slotIndex: Int, action: AssistantAction): View {
                 return LinearLayout(this@ActionsActivity).apply {
                     orientation = LinearLayout.VERTICAL
                     gravity = Gravity.CENTER
@@ -161,13 +189,12 @@ class ActionsActivity : Activity() {
                     isClickable = true
                     isFocusable = true
 
-                    val params = GridLayout.LayoutParams().apply {
+                    layoutParams = GridLayout.LayoutParams().apply {
                         width = 0
                         height = 0
                         columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                         rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                     }
-                    layoutParams = params
 
                     background = GradientDrawable().apply {
                         cornerRadius = dp(8).toFloat()
@@ -190,13 +217,66 @@ class ActionsActivity : Activity() {
                     addView(text)
 
                     setOnClickListener {
-                        pendingPage = pageIndex
                         pendingSlot = slotIndex
-                        openPicker(
-                            "Page ${pageIndex + 1} - Slot ${slotIndex + 1}",
-                            action,
-                            REQUEST_MENU_SLOT
-                        )
+                        openActionPicker("Slot ${slotIndex + 1}", action, REQUEST_ACTION_SLOT)
+                    }
+                }
+            }
+
+            private fun createAppGridCell(slotIndex: Int, packageName: String?): View {
+                val pm = packageManager
+
+                return LinearLayout(this@ActionsActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    gravity = Gravity.CENTER
+                    setPadding(dp(8), dp(8), dp(8), dp(8))
+                    isClickable = true
+                    isFocusable = true
+
+                    layoutParams = GridLayout.LayoutParams().apply {
+                        width = 0
+                        height = 0
+                        columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                        rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                    }
+
+                    background = GradientDrawable().apply {
+                        cornerRadius = dp(8).toFloat()
+                        setColor(Color.parseColor("#F5F5F7"))
+                    }
+
+                    val iconView = ImageView(this@ActionsActivity)
+                    val textView = TextView(this@ActionsActivity).apply {
+                        textSize = 9f
+                        gravity = Gravity.CENTER
+                        maxLines = 1
+                    }
+
+                    if (!packageName.isNullOrEmpty()) {
+                        try {
+                            val appInfo = pm.getApplicationInfo(packageName, 0)
+                            iconView.setImageDrawable(pm.getApplicationIcon(appInfo))
+                            textView.text = pm.getApplicationLabel(appInfo)
+                            textView.setTextColor(Color.DKGRAY)
+                        } catch (e: Exception) {
+                            iconView.setImageResource(android.R.drawable.ic_menu_help)
+                            iconView.setColorFilter(Color.LTGRAY)
+                            textView.text = "Missing"
+                            textView.setTextColor(Color.GRAY)
+                        }
+                    } else {
+                        iconView.setImageResource(android.R.drawable.ic_menu_add)
+                        iconView.setColorFilter(Color.LTGRAY)
+                        textView.text = "Select App"
+                        textView.setTextColor(Color.GRAY)
+                    }
+
+                    addView(iconView, LinearLayout.LayoutParams(dp(24), dp(24)))
+                    addView(textView)
+
+                    setOnClickListener {
+                        pendingSlot = slotIndex
+                        openAppPicker(packageName, REQUEST_APP_SLOT)
                     }
                 }
             }

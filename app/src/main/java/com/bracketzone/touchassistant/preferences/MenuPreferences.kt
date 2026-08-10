@@ -21,14 +21,12 @@ class MenuPreferences(context: Context) {
             AssistantAction.FLASHLIGHT,
             AssistantAction.AUTO_ROTATE
         )
-        // Page 2 defaults to NONE for all slots
-        val PAGE_2_DEFAULTS = List(9) { AssistantAction.NONE }
     }
 
+    // --- Page 1: Actions ---
     fun getPageActions(pageIndex: Int): List<AssistantAction> {
-        val defaults = if (pageIndex == 0) PAGE_1_DEFAULTS else PAGE_2_DEFAULTS
-        return defaults.indices.map { slotIndex ->
-            getSlotAction(pageIndex, slotIndex, defaults[slotIndex])
+        return PAGE_1_DEFAULTS.indices.map { slotIndex ->
+            getSlotAction(pageIndex, slotIndex, PAGE_1_DEFAULTS[slotIndex])
         }
     }
 
@@ -43,5 +41,24 @@ class MenuPreferences(context: Context) {
 
     fun setSlotAction(pageIndex: Int, slotIndex: Int, action: AssistantAction) {
         prefs.edit().putString("menu_p${pageIndex}_slot_$slotIndex", action.name).apply()
+    }
+
+    // --- Page 2: App Package Names ---
+    fun getPageAppPackages(): List<String?> {
+        return (0..8).map { slotIndex ->
+            getSlotAppPackage(slotIndex)
+        }
+    }
+
+    fun getSlotAppPackage(slotIndex: Int): String? {
+        return prefs.getString("menu_p1_app_slot_$slotIndex", null)
+    }
+
+    fun setSlotAppPackage(slotIndex: Int, packageName: String?) {
+        if (packageName == null) {
+            prefs.edit().remove("menu_p1_app_slot_$slotIndex").apply()
+        } else {
+            prefs.edit().putString("menu_p1_app_slot_$slotIndex", packageName).apply()
+        }
     }
 }

@@ -50,6 +50,11 @@
         </activity>
 
         <activity
+            android:name=".ui.AppPickerActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
+
+        <activity
             android:name=".ui.ActionsActivity"
             android:exported="false"
             android:label="Actions" />
