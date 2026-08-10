@@ -11,20 +11,13 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import com.bracketzone.touchassistant.service.FloatingWidgetService
 import com.bracketzone.touchassistant.service.TouchAccessibilityService
 import com.bracketzone.touchassistant.ui.ActionsActivity
 
 class MainActivity : Activity() {
-
-    private lateinit var overlaySetupCard: LinearLayout
-    private lateinit var accessibilitySetupCard: LinearLayout
-    private lateinit var mainControlCard: LinearLayout
-
-    private lateinit var overlayButton: Button
-    private lateinit var accessibilityButton: Button
 
     private lateinit var serviceStatusText: TextView
     private lateinit var startButton: Button
@@ -35,24 +28,13 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        overlaySetupCard = findViewById(R.id.overlaySetupCard)
-        accessibilitySetupCard = findViewById(R.id.accessibilitySetupCard)
-        mainControlCard = findViewById(R.id.mainControlCard)
-
-        overlayButton = findViewById(R.id.overlayButton)
-        accessibilityButton = findViewById(R.id.accessibilityButton)
-
         serviceStatusText = findViewById(R.id.serviceStatusText)
         startButton = findViewById(R.id.startButton)
         stopButton = findViewById(R.id.stopButton)
         actionsButton = findViewById(R.id.actionsButton)
 
-        overlayButton.setOnClickListener { openOverlaySettings() }
-        accessibilityButton.setOnClickListener { openAccessibilitySettings() }
-
         startButton.setOnClickListener {
-            startFloatingWidgetService()
-            updateUIState()
+            checkPermissionsAndStart()
         }
 
         stopButton.setOnClickListener {
@@ -70,33 +52,33 @@ class MainActivity : Activity() {
         updateUIState()
     }
 
+    private fun checkPermissionsAndStart() {
+        if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Please allow Display Overlay permission", Toast.LENGTH_LONG).show()
+            openOverlaySettings()
+            return
+        }
+
+        if (!isAccessibilityServiceEnabled()) {
+            Toast.makeText(this, "Please enable Touch Assistant in Accessibility Settings", Toast.LENGTH_LONG).show()
+            openAccessibilitySettings()
+            return
+        }
+
+        startFloatingWidgetService()
+        updateUIState()
+    }
+
     private fun updateUIState() {
-        val hasOverlay = Settings.canDrawOverlays(this)
-        val hasAccessibility = isAccessibilityServiceEnabled()
-
-        if (!hasOverlay) {
-            overlaySetupCard.visibility = View.VISIBLE
-            accessibilitySetupCard.visibility = View.GONE
-            mainControlCard.visibility = View.GONE
-        } else if (!hasAccessibility) {
-            overlaySetupCard.visibility = View.GONE
-            accessibilitySetupCard.visibility = View.VISIBLE
-            mainControlCard.visibility = View.GONE
+        val isRunning = isServiceRunning(FloatingWidgetService::class.java)
+        if (isRunning) {
+            serviceStatusText.text = "✓ Touch Assistant is Running"
+            startButton.visibility = View.GONE
+            stopButton.visibility = View.VISIBLE
         } else {
-            overlaySetupCard.visibility = View.GONE
-            accessibilitySetupCard.visibility = View.GONE
-            mainControlCard.visibility = View.VISIBLE
-
-            val isRunning = isServiceRunning(FloatingWidgetService::class.java)
-            if (isRunning) {
-                serviceStatusText.text = "✓ Touch Assistant is Running"
-                startButton.visibility = View.GONE
-                stopButton.visibility = View.VISIBLE
-            } else {
-                serviceStatusText.text = "Touch Assistant is Stopped"
-                startButton.visibility = View.VISIBLE
-                stopButton.visibility = View.GONE
-            }
+            serviceStatusText.text = "Touch Assistant is Stopped"
+            startButton.visibility = View.VISIBLE
+            stopButton.visibility = View.GONE
         }
     }
 

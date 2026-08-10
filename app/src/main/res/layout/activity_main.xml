@@ -29,77 +29,6 @@
             android:textSize="15sp"
             android:paddingBottom="24dp" />
 
-        <!-- STEP 1: OVERLAY PERMISSION CARD -->
-        <LinearLayout
-            android:id="@+id/overlaySetupCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#FFFFFF"
-            android:padding="20dp"
-            android:elevation="2dp"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Step 1 of 2: Display Overlay"
-                android:textColor="#333333"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Required to render the floating touch assistant button over other applications."
-                android:textColor="#666666"
-                android:textSize="14sp"
-                android:paddingTop="8dp"
-                android:paddingBottom="16dp" />
-
-            <Button
-                android:id="@+id/overlayButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Grant Overlay Permission" />
-        </LinearLayout>
-
-        <!-- STEP 2: ACCESSIBILITY SERVICE CARD -->
-        <LinearLayout
-            android:id="@+id/accessibilitySetupCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#FFFFFF"
-            android:padding="20dp"
-            android:elevation="2dp"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Step 2 of 2: Accessibility Service"
-                android:textColor="#333333"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Required to execute system actions like Home, Back, Recents, and Screenshots."
-                android:textColor="#666666"
-                android:textSize="14sp"
-                android:paddingTop="8dp"
-                android:paddingBottom="16dp" />
-
-            <Button
-                android:id="@+id/accessibilityButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Enable Accessibility Service" />
-        </LinearLayout>
-
         <!-- MAIN APP SCREEN CARD -->
         <LinearLayout
             android:id="@+id/mainControlCard"
@@ -108,14 +37,13 @@
             android:orientation="vertical"
             android:background="#FFFFFF"
             android:padding="20dp"
-            android:elevation="2dp"
-            android:visibility="gone">
+            android:elevation="2dp">
 
             <TextView
                 android:id="@+id/serviceStatusText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Service is stopped"
+                android:text="Touch Assistant is Stopped"
                 android:textColor="#333333"
                 android:textSize="18sp"
                 android:textStyle="bold"
