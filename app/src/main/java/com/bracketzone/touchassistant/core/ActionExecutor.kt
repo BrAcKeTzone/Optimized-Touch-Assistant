@@ -1,0 +1,596 @@
+package com.bracketzone.touchassistant.core
+
+import android.content.Context
+import android.content.Intent
+import android.media.AudioManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
+import com.bracketzone.touchassistant.service.TouchAccessibilityService
+
+class ActionExecutor(
+    private val context: Context
+) {
+
+    private val audioManager =
+        context.getSystemService(
+            Context.AUDIO_SERVICE
+        ) as AudioManager
+
+    fun execute(
+        action: AssistantAction
+    ) {
+
+        // First, check whether this is an
+        // Accessibility Service action.
+        if (executeAccessibilityAction(action)) {
+            return
+        }
+
+        when (action) {
+
+            // ------------------------------------------
+            // Audio
+            // ------------------------------------------
+
+            AssistantAction.VOLUME_UP -> {
+                volumeUp()
+            }
+
+            AssistantAction.VOLUME_DOWN -> {
+                volumeDown()
+            }
+
+            AssistantAction.MUTE_UNMUTE -> {
+                toggleMute()
+            }
+
+            AssistantAction.TOGGLE_RINGER -> {
+                toggleRinger()
+            }
+
+            // ------------------------------------------
+            // Hardware
+            // ------------------------------------------
+
+            AssistantAction.FLASHLIGHT -> {
+                toggleFlashlight()
+            }
+
+            // ------------------------------------------
+            // Display
+            // ------------------------------------------
+
+            AssistantAction.AUTO_ROTATE -> {
+                toggleAutoRotate()
+            }
+
+            AssistantAction.MAX_BRIGHTNESS -> {
+                setMaximumBrightness()
+            }
+
+            // ------------------------------------------
+            // Synchronization
+            // ------------------------------------------
+
+            AssistantAction.TOGGLE_SYNC -> {
+                toggleSync()
+            }
+
+            // ------------------------------------------
+            // Connectivity
+            // ------------------------------------------
+
+            AssistantAction.WI_FI -> {
+                openSettings(
+                    Settings.ACTION_WIFI_SETTINGS
+                )
+            }
+
+            AssistantAction.BLUETOOTH -> {
+                openSettings(
+                    Settings.ACTION_BLUETOOTH_SETTINGS
+                )
+            }
+
+            AssistantAction.LOCATION -> {
+                openSettings(
+                    Settings.ACTION_LOCATION_SOURCE_SETTINGS
+                )
+            }
+
+            AssistantAction.AIRPLANE_MODE -> {
+                openSettings(
+                    Settings.ACTION_AIRPLANE_MODE_SETTINGS
+                )
+            }
+
+            AssistantAction.MOBILE_DATA -> {
+                openMobileNetworkSettings()
+            }
+
+            // ------------------------------------------
+            // No direct action
+            // ------------------------------------------
+
+            AssistantAction.NONE,
+            AssistantAction.MAIN -> {
+                // These are handled by the UI/service.
+            }
+
+            else -> {
+                // Accessibility actions were already
+                // handled above.
+            }
+        }
+    }
+
+    // ==================================================
+    // ACCESSIBILITY ACTIONS
+    // ==================================================
+
+    private fun executeAccessibilityAction(
+        action: AssistantAction
+    ): Boolean {
+
+        return when (action) {
+
+            AssistantAction.HOME,
+            AssistantAction.BACK,
+            AssistantAction.RECENTS,
+            AssistantAction.NOTIFICATIONS,
+            AssistantAction.QUICK_SETTINGS,
+            AssistantAction.POWER,
+            AssistantAction.SPLIT_SCREEN,
+            AssistantAction.LOCK,
+            AssistantAction.SCREENSHOT -> {
+
+                val service =
+                    TouchAccessibilityService
+                        .getInstance()
+
+                if (service == null) {
+
+                    showToast(
+                        "Enable Touch Assistant Accessibility Service"
+                    )
+
+                    false
+
+                } else {
+
+                    service.performAssistantAction(
+                        action
+                    )
+                }
+            }
+
+            else -> {
+                false
+            }
+        }
+    }
+
+    // ==================================================
+    // VOLUME
+    // ==================================================
+
+    private fun volumeUp() {
+
+        audioManager.adjustVolume(
+            AudioManager.ADJUST_RAISE,
+            AudioManager.FLAG_SHOW_UI
+        )
+    }
+
+    private fun volumeDown() {
+
+        audioManager.adjustVolume(
+            AudioManager.ADJUST_LOWER,
+            AudioManager.FLAG_SHOW_UI
+        )
+    }
+
+    // ==================================================
+    // MUTE
+    // ==================================================
+
+    private fun toggleMute() {
+
+        if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.M
+        ) {
+
+            audioManager.adjustStreamVolume(
+                AudioManager.STREAM_RING,
+                AudioManager.ADJUST_TOGGLE_MUTE,
+                AudioManager.FLAG_SHOW_UI
+            )
+
+        } else {
+
+            @Suppress("DEPRECATION")
+            audioManager.setStreamMute(
+                AudioManager.STREAM_RING,
+                !isRingStreamMuted()
+            )
+        }
+    }
+
+    private fun isRingStreamMuted(): Boolean {
+
+        return if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.M
+        ) {
+
+            audioManager.isStreamMute(
+                AudioManager.STREAM_RING
+            )
+
+        } else {
+
+            false
+        }
+    }
+
+    // ==================================================
+    // RINGER MODE
+    // ==================================================
+
+    private fun toggleRinger() {
+
+        when (audioManager.ringerMode) {
+
+            AudioManager.RINGER_MODE_NORMAL -> {
+
+                audioManager.ringerMode =
+                    AudioManager.RINGER_MODE_SILENT
+            }
+
+            AudioManager.RINGER_MODE_SILENT,
+            AudioManager.RINGER_MODE_VIBRATE -> {
+
+                audioManager.ringerMode =
+                    AudioManager.RINGER_MODE_NORMAL
+            }
+
+            else -> {
+
+                audioManager.ringerMode =
+                    AudioManager.RINGER_MODE_NORMAL
+            }
+        }
+    }
+
+    // ==================================================
+    // FLASHLIGHT
+    // ==================================================
+
+    private fun toggleFlashlight() {
+
+        if (
+            Build.VERSION.SDK_INT <
+            Build.VERSION_CODES.M
+        ) {
+
+            showToast(
+                "Flashlight requires Android 6.0+"
+            )
+
+            return
+        }
+
+        try {
+
+            val cameraManager =
+                context.getSystemService(
+                    Context.CAMERA_SERVICE
+                ) as android.hardware.camera2.CameraManager
+
+            val cameraId =
+                cameraManager.cameraIdList
+                    .firstOrNull { id ->
+
+                        val characteristics =
+                            cameraManager
+                                .getCameraCharacteristics(id)
+
+                        characteristics.get(
+                            android.hardware.camera2
+                                .CameraCharacteristics
+                                .FLASH_INFO_AVAILABLE
+                        ) == true
+                    }
+
+            if (cameraId == null) {
+
+                showToast(
+                    "No flashlight available"
+                )
+
+                return
+            }
+
+            val preferences =
+                context.getSharedPreferences(
+                    FLASHLIGHT_PREFS,
+                    Context.MODE_PRIVATE
+                )
+
+            val currentState =
+                preferences.getBoolean(
+                    KEY_FLASHLIGHT,
+                    false
+                )
+
+            val newState =
+                !currentState
+
+            cameraManager.setTorchMode(
+                cameraId,
+                newState
+            )
+
+            preferences.edit()
+                .putBoolean(
+                    KEY_FLASHLIGHT,
+                    newState
+                )
+                .apply()
+
+        } catch (
+            _: SecurityException
+        ) {
+
+            showToast(
+                "Camera permission is required"
+            )
+
+        } catch (
+            _: Exception
+        ) {
+
+            showToast(
+                "Unable to control flashlight"
+            )
+        }
+    }
+
+    // ==================================================
+    // AUTO ROTATE
+    // ==================================================
+
+    private fun toggleAutoRotate() {
+
+        if (
+            !Settings.System.canWrite(context)
+        ) {
+
+            openWriteSettingsPermission()
+
+            return
+        }
+
+        try {
+
+            val current =
+                Settings.System.getInt(
+                    context.contentResolver,
+                    Settings.System.ACCELEROMETER_ROTATION,
+                    1
+                )
+
+            Settings.System.putInt(
+                context.contentResolver,
+                Settings.System.ACCELEROMETER_ROTATION,
+                if (current == 1) 0 else 1
+            )
+
+        } catch (
+            _: Exception
+        ) {
+
+            showToast(
+                "Unable to change auto-rotate"
+            )
+        }
+    }
+
+    // ==================================================
+    // MAXIMUM BRIGHTNESS
+    // ==================================================
+
+    private fun setMaximumBrightness() {
+
+        if (
+            !Settings.System.canWrite(context)
+        ) {
+
+            openWriteSettingsPermission()
+
+            return
+        }
+
+        try {
+
+            Settings.System.putInt(
+                context.contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS,
+                255
+            )
+
+        } catch (
+            _: Exception
+        ) {
+
+            showToast(
+                "Unable to change brightness"
+            )
+        }
+    }
+
+    // ==================================================
+    // MASTER SYNC
+    // ==================================================
+
+    @Suppress("DEPRECATION")
+    private fun toggleSync() {
+
+        try {
+
+            val current =
+                android.content.ContentResolver
+                    .getMasterSyncAutomatically()
+
+            android.content.ContentResolver
+                .setMasterSyncAutomatically(
+                    !current
+                )
+
+        } catch (
+            _: Exception
+        ) {
+
+            showToast(
+                "Unable to change synchronization"
+            )
+        }
+    }
+
+    // ==================================================
+    // SETTINGS
+    // ==================================================
+
+    private fun openSettings(
+        action: String
+    ) {
+
+        try {
+
+            val intent =
+                Intent(action).apply {
+
+                    flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+
+            context.startActivity(intent)
+
+        } catch (
+            _: Exception
+        ) {
+
+            openGeneralSettings()
+        }
+    }
+
+    private fun openMobileNetworkSettings() {
+
+        try {
+
+            val intent =
+                Intent(
+                    Settings.ACTION_NETWORK_OPERATOR_SETTINGS
+                ).apply {
+
+                    flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+
+            context.startActivity(intent)
+
+        } catch (
+            _: Exception
+        ) {
+
+            openSettings(
+                Settings.ACTION_WIRELESS_SETTINGS
+            )
+        }
+    }
+
+    private fun openGeneralSettings() {
+
+        try {
+
+            val intent =
+                Intent(
+                    Settings.ACTION_SETTINGS
+                ).apply {
+
+                    flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+
+            context.startActivity(intent)
+
+        } catch (
+            _: Exception
+        ) {
+
+            showToast(
+                "Unable to open Settings"
+            )
+        }
+    }
+
+    // ==================================================
+    // WRITE SETTINGS
+    // ==================================================
+
+    private fun openWriteSettingsPermission() {
+
+        try {
+
+            val intent =
+                Intent(
+                    Settings.ACTION_MANAGE_WRITE_SETTINGS
+                ).apply {
+
+                    data = Uri.parse(
+                        "package:${context.packageName}"
+                    )
+
+                    flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+
+            context.startActivity(intent)
+
+        } catch (
+            _: Exception
+        ) {
+
+            showToast(
+                "Allow Modify System Settings"
+            )
+        }
+    }
+
+    // ==================================================
+    // TOAST
+    // ==================================================
+
+    private fun showToast(
+        message: String
+    ) {
+
+        Toast.makeText(
+            context,
+            message,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    companion object {
+
+        private const val FLASHLIGHT_PREFS =
+            "touch_assistant_hardware"
+
+        private const val KEY_FLASHLIGHT =
+            "flashlight_enabled"
+    }
+}

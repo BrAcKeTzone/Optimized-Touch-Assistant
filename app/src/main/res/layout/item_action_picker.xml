@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="4dp"
+    android:background="@android:drawable/dialog_holo_light_frame"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <!-- 1. ICON -->
+    <ImageView
+        android:id="@+id/actionIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:contentDescription="Action Icon"
+        android:tint="#111111" />
+
+    <!-- 2. NAME & DESCRIPTION -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/actionName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#111111"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/actionDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:paddingTop="2dp" />
+    </LinearLayout>
+
+    <!-- 3. SELECTED MARK -->
+    <ImageView
+        android:id="@+id/selectedCheckmark"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:contentDescription="Selected Mark"
+        android:src="@android:drawable/checkbox_on_background"
+        android:tint="#007AFF"
+        android:visibility="gone" />
+
+</LinearLayout>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Touch Assistant</string>
+    <string
+        name="accessibility_service_description">
+    Provides system navigation and touch assistant actions.
+</string>
+</resources>
