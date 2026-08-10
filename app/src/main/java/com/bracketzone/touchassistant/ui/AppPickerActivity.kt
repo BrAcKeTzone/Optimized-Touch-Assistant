@@ -3,6 +3,7 @@ package com.bracketzone.touchassistant.ui
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -33,8 +34,16 @@ class AppPickerActivity : Activity() {
         findViewById<ImageView>(R.id.backButton).setOnClickListener { finish() }
 
         val pm = packageManager
-        val installedApps = pm.getInstalledApplications(0)
-            .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
+
+        // Retrieve non-system apps that have a launcher intent
+        val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            .filter { appInfo ->
+                val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                val isUpdatedSystemApp = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                val isUserApp = !isSystemApp && !isUpdatedSystemApp
+
+                isUserApp && pm.getLaunchIntentForPackage(appInfo.packageName) != null
+            }
             .sortedBy { pm.getApplicationLabel(it).toString().lowercase() }
 
         val recyclerView = findViewById<RecyclerView>(R.id.actionsRecyclerView)
