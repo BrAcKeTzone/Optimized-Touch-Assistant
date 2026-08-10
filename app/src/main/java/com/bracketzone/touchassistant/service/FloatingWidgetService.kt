@@ -482,12 +482,28 @@ class FloatingWidgetService : Service() {
     private fun showMainMenu() {
         relativeMenuManager.dismiss()
 
+        val edgeMargin = (16 * resources.displayMetrics.density).toInt()
+        val displayMetrics = resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+
+        // Estimate or measure menu height
+        val menuHeight = dp(240) // Target height for menu layout calculation
+
+        val statusBarHeight = getStatusBarHeight()
+        val minTopY = statusBarHeight + edgeMargin
+        val maxBottomY = (screenHeight - menuHeight - edgeMargin).coerceAtLeast(minTopY)
+
+        // Clamp the anchor Y coordinate so the relative menu stays within bounds
+        val safeAnchorY = windowParams.y.coerceIn(minTopY, maxBottomY)
+
+        val viewHeight = if (floatingView.height > 0) floatingView.height else dp(56)
+
         relativeMenuManager.showMenu(
             anchorView = floatingView,
             anchorX = windowParams.x,
-            anchorY = windowParams.y,
+            anchorY = safeAnchorY,
             anchorWidth = floatingView.width,
-            anchorHeight = floatingView.height
+            anchorHeight = viewHeight
         )
     }
 }
