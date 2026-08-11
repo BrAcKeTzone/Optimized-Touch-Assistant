@@ -19,6 +19,7 @@ import android.widget.Toast
 import com.bracketzone.touchassistant.service.FloatingWidgetService
 import com.bracketzone.touchassistant.service.TouchAccessibilityService
 import com.bracketzone.touchassistant.ui.ActionsActivity
+import androidx.core.net.toUri
 
 class MainActivity : Activity() {
 
@@ -120,7 +121,7 @@ class MainActivity : Activity() {
     private fun openOverlaySettings() {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:$packageName")
+            "package:$packageName".toUri()
         )
         startActivity(intent)
     }
