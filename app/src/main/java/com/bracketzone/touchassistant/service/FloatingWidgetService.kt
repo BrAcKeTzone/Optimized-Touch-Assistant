@@ -13,6 +13,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Handler
@@ -133,12 +134,15 @@ class FloatingWidgetService : Service() {
             size,
             size,
             overlayType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             x = savedX
             y = savedY
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
         }
 
         windowManager.addView(floatingView, windowParams)
@@ -160,8 +164,10 @@ class FloatingWidgetService : Service() {
             restoreFromIdle()
             edgeAnimator?.cancel()
 
-            clampFloatingViewPosition()
-            snapToNearestEdge()
+            floatingView.post {
+                clampFloatingViewPosition()
+                snapToNearestEdge()
+            }
 
             scheduleIdleHide()
         }
@@ -227,8 +233,14 @@ class FloatingWidgetService : Service() {
         startForeground(NOTIFICATION_ID, notification)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
-
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Stop immediately if accessibility service is not active
+        if (!TouchAccessibilityService.isEnabled()) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        return START_STICKY
+    }
     override fun onDestroy() {
         relativeMenuManager.dismiss()
         idleHandler.removeCallbacks(idleRunnable)
@@ -330,29 +342,22 @@ class FloatingWidgetService : Service() {
         return false
     }
 
-    private fun getStatusBarHeight(): Int {
-        var statusBarHeight = 0
+    private fun getSafeInsets(): Rect {
+        val rect = Rect()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val windowMetrics = windowManager.currentWindowMetrics
-            val insets = windowMetrics.windowInsets.getInsetsIgnoringVisibility(
-                WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()
+            val insets = windowManager.currentWindowMetrics.windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
             )
-            statusBarHeight = insets.top
-        }
-
-        if (statusBarHeight == 0) {
+            rect.set(insets.left, insets.top, insets.right, insets.bottom)
+        } else {
             val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
             if (resourceId > 0) {
-                statusBarHeight = resources.getDimensionPixelSize(resourceId)
+                rect.top = resources.getDimensionPixelSize(resourceId)
             }
         }
-
-        return statusBarHeight
+        return rect
     }
 
-    /**
-     * Determines whether a display cutout / camera notch exists on the left or right side of the screen.
-     */
     private fun getCameraCutoutSide(): Int {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val cutout: DisplayCutout? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -375,33 +380,38 @@ class FloatingWidgetService : Service() {
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
+        val insets = getSafeInsets()
 
         val viewWidth = if (floatingView.width > 0) floatingView.width else dp(56)
         val viewHeight = if (floatingView.height > 0) floatingView.height else dp(56)
 
-        val minTopY = getStatusBarHeight()
-        val maxX = (screenWidth - viewWidth).coerceAtLeast(0)
-        val maxY = (screenHeight - viewHeight).coerceAtLeast(minTopY)
+        val minX = insets.left
+        val maxX = (screenWidth - viewWidth - insets.right).coerceAtLeast(minX)
+        val minY = insets.top
+        val maxY = (screenHeight - viewHeight - insets.bottom).coerceAtLeast(minY)
 
-        windowParams.x = windowParams.x.coerceIn(0, maxX)
-        windowParams.y = windowParams.y.coerceIn(minTopY, maxY)
+        windowParams.x = windowParams.x.coerceIn(minX, maxX)
+        windowParams.y = windowParams.y.coerceIn(minY, maxY)
     }
 
     private fun snapToNearestEdge() {
-        val screenWidth = resources.displayMetrics.widthPixels
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val insets = getSafeInsets()
+
         val viewWidth = if (floatingView.width > 0) floatingView.width else dp(56)
         val currentX = windowParams.x
-        val maxX = (screenWidth - viewWidth).coerceAtLeast(0)
+
+        val minX = insets.left
+        val maxX = (screenWidth - viewWidth - insets.right).coerceAtLeast(minX)
 
         val cutoutSide = getCameraCutoutSide()
 
-        // Force the target edge to avoid the camera notch side in landscape
         val targetX = when (cutoutSide) {
-            CUTOUT_LEFT -> maxX // Camera is on the left -> force floating button to the RIGHT
-            CUTOUT_RIGHT -> 0   // Camera is on the right -> force floating button to the LEFT
+            CUTOUT_LEFT -> maxX
+            CUTOUT_RIGHT -> minX
             else -> {
-                // Default snapping logic if no notch is present on the sides
-                if (currentX + viewWidth / 2 < screenWidth / 2) 0 else maxX
+                if (currentX + viewWidth / 2 < screenWidth / 2) minX else maxX
             }
         }
 
@@ -482,27 +492,14 @@ class FloatingWidgetService : Service() {
     private fun showMainMenu() {
         relativeMenuManager.dismiss()
 
-        val edgeMargin = (16 * resources.displayMetrics.density).toInt()
-        val displayMetrics = resources.displayMetrics
-        val screenHeight = displayMetrics.heightPixels
-
-        // Estimate or measure menu height
-        val menuHeight = dp(240) // Target height for menu layout calculation
-
-        val statusBarHeight = getStatusBarHeight()
-        val minTopY = statusBarHeight + edgeMargin
-        val maxBottomY = (screenHeight - menuHeight - edgeMargin).coerceAtLeast(minTopY)
-
-        // Clamp the anchor Y coordinate so the relative menu stays within bounds
-        val safeAnchorY = windowParams.y.coerceIn(minTopY, maxBottomY)
-
+        val viewWidth = if (floatingView.width > 0) floatingView.width else dp(56)
         val viewHeight = if (floatingView.height > 0) floatingView.height else dp(56)
 
         relativeMenuManager.showMenu(
             anchorView = floatingView,
             anchorX = windowParams.x,
-            anchorY = safeAnchorY,
-            anchorWidth = floatingView.width,
+            anchorY = windowParams.y,
+            anchorWidth = viewWidth,
             anchorHeight = viewHeight
         )
     }

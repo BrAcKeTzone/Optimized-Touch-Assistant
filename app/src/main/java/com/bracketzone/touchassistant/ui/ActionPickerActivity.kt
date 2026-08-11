@@ -68,14 +68,12 @@ class ActionPickerActivity : Activity() {
             private val checkmark: ImageView = itemView.findViewById(R.id.selectedCheckmark)
 
             fun bind(action: AssistantAction) {
-                // Set name and description
-                title.text = action.name.replace("_", " ")
+                // Formats MUTE_UNMUTE as "MUTE/UNMUTE" and all other enum items properly
+                title.text = getFormattedActionTitle(action)
                 desc.text = getActionDescription(action)
 
-                // Set icon
-                icon.setImageResource(getIconForAction(action))
+                icon.setImageResource(ActionIconProvider.getIconResId(action))
 
-                // Display selected state (Mark + Highlight)
                 val isSelected = (action == currentSelectedAction)
                 checkmark.visibility = if (isSelected) View.VISIBLE else View.GONE
 
@@ -96,6 +94,28 @@ class ActionPickerActivity : Activity() {
         }
     }
 
+    private fun getFormattedActionTitle(action: AssistantAction): String {
+        return when (action) {
+            AssistantAction.HOME -> "HOME"
+            AssistantAction.BACK -> "BACK"
+            AssistantAction.RECENTS -> "RECENTS"
+            AssistantAction.NOTIFICATIONS -> "NOTIFICATIONS"
+            AssistantAction.QUICK_SETTINGS -> "QUICK SETTINGS"
+            AssistantAction.LOCK -> "LOCK"
+            AssistantAction.SCREENSHOT -> "SCREENSHOT"
+            AssistantAction.FLASHLIGHT -> "FLASHLIGHT"
+            AssistantAction.AUTO_ROTATE -> "AUTO-ROTATE"
+            AssistantAction.VOLUME_UP -> "VOLUME UP"
+            AssistantAction.VOLUME_DOWN -> "VOLUME DOWN"
+            AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
+            AssistantAction.POWER -> "POWER"
+            AssistantAction.SPLIT_SCREEN -> "SPLIT SCREEN"
+            AssistantAction.MAIN -> "MAIN"
+            AssistantAction.NONE -> "NONE"
+            else -> action.name.replace("_", " ")
+        }
+    }
+
     private fun getActionDescription(action: AssistantAction): String {
         return when (action) {
             AssistantAction.HOME -> "Navigate to device home screen"
@@ -109,26 +129,10 @@ class ActionPickerActivity : Activity() {
             AssistantAction.AUTO_ROTATE -> "Toggle auto-rotation setting"
             AssistantAction.VOLUME_UP -> "Increase media volume level"
             AssistantAction.VOLUME_DOWN -> "Decrease media volume level"
+            AssistantAction.MUTE_UNMUTE -> "Toggle ringer mode between sound and silent"
             AssistantAction.SPLIT_SCREEN -> "Toggle split-screen mode"
             AssistantAction.NONE -> "No action assigned"
-            else -> "Execute ${action.name.replace("_", " ").lowercase()} action"
-        }
-    }
-
-    private fun getIconForAction(action: AssistantAction): Int {
-        return when (action) {
-            AssistantAction.HOME -> android.R.drawable.ic_menu_compass
-            AssistantAction.BACK -> android.R.drawable.ic_menu_revert
-            AssistantAction.RECENTS -> android.R.drawable.ic_menu_recent_history
-            AssistantAction.NOTIFICATIONS -> android.R.drawable.ic_popup_reminder
-            AssistantAction.QUICK_SETTINGS -> android.R.drawable.ic_menu_preferences
-            AssistantAction.LOCK -> android.R.drawable.ic_lock_lock
-            AssistantAction.SCREENSHOT -> android.R.drawable.ic_menu_camera
-            AssistantAction.FLASHLIGHT -> android.R.drawable.ic_menu_day
-            AssistantAction.AUTO_ROTATE -> android.R.drawable.ic_menu_always_landscape_portrait
-            AssistantAction.VOLUME_UP -> android.R.drawable.ic_lock_idle_alarm
-            AssistantAction.VOLUME_DOWN -> android.R.drawable.ic_lock_silent_mode
-            else -> android.R.drawable.ic_menu_info_details
+            else -> "Execute ${getFormattedActionTitle(action).lowercase()} action"
         }
     }
 }

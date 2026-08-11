@@ -7,12 +7,14 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
@@ -38,6 +40,22 @@ class RelativeMenuManager(
     private val menuPreferences = MenuPreferences(context)
     private var isDismissing = false
 
+    private fun getSafeInsets(): Rect {
+        val rect = Rect()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val insets = windowManager.currentWindowMetrics.windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+            )
+            rect.set(insets.left, insets.top, insets.right, insets.bottom)
+        } else {
+            val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+            if (resourceId > 0) {
+                rect.top = context.resources.getDimensionPixelSize(resourceId)
+            }
+        }
+        return rect
+    }
+
     fun showMenu(anchorView: View, anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int) {
         if (isShowing()) {
             dismissImmediate()
@@ -51,15 +69,21 @@ class RelativeMenuManager(
 
         val screenWidth = context.resources.displayMetrics.widthPixels
         val screenHeight = context.resources.displayMetrics.heightPixels
+        val insets = getSafeInsets()
         val margin = dp(8)
 
         val targetCenterX = anchorX + (anchorWidth / 2)
         val targetCenterY = anchorY + (anchorHeight / 2)
 
-        val menuX = (targetCenterX - (menuWidth / 2))
-            .coerceIn(margin, (screenWidth - menuWidth - margin).coerceAtLeast(margin))
-        val menuY = (targetCenterY - (menuHeight / 2))
-            .coerceIn(dp(16), (screenHeight - menuHeight - dp(16)).coerceAtLeast(dp(16)))
+        // Calculate safe horizontal & vertical bounds accounting for system insets
+        val minX = insets.left + margin
+        val maxX = (screenWidth - menuWidth - insets.right - margin).coerceAtLeast(minX)
+
+        val minY = insets.top + dp(16)
+        val maxY = (screenHeight - menuHeight - insets.bottom - dp(16)).coerceAtLeast(minY)
+
+        val menuX = (targetCenterX - (menuWidth / 2)).coerceIn(minX, maxX)
+        val menuY = (targetCenterY - (menuHeight / 2)).coerceIn(minY, maxY)
 
         val overlay = FrameLayout(context).apply {
             setBackgroundColor(Color.TRANSPARENT)
@@ -103,9 +127,13 @@ class RelativeMenuManager(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             overlayType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
-        )
+        ).apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+        }
 
         windowManager.addView(overlay, windowParams)
 
@@ -253,7 +281,7 @@ class RelativeMenuManager(
         return LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(dp(4), dp(4), dp(4), dp(4))
+            setPadding(dp(2), dp(2), dp(2), dp(2))
 
             layoutParams = GridLayout.LayoutParams().apply {
                 width = 0
@@ -263,14 +291,17 @@ class RelativeMenuManager(
             }
 
             val icon = ImageView(context).apply {
-                setImageResource(getIconForAction(action))
+                setImageResource(ActionIconProvider.getIconResId(action))
                 setColorFilter(if (action == AssistantAction.NONE) Color.GRAY else Color.WHITE)
             }
+
             val text = TextView(context).apply {
                 text = getLabelForAction(action)
                 setTextColor(if (action == AssistantAction.NONE) Color.GRAY else Color.WHITE)
-                textSize = 9f
+                textSize = 8f
                 gravity = Gravity.CENTER
+                maxLines = 2
+                ellipsize = android.text.TextUtils.TruncateAt.END
             }
 
             addView(icon, LinearLayout.LayoutParams(dp(24), dp(24)))
@@ -340,38 +371,23 @@ class RelativeMenuManager(
         }
     }
 
-    private fun getIconForAction(action: AssistantAction): Int {
-        return when (action) {
-            AssistantAction.HOME -> android.R.drawable.ic_menu_compass
-            AssistantAction.BACK -> android.R.drawable.ic_menu_revert
-            AssistantAction.RECENTS -> android.R.drawable.ic_menu_recent_history
-            AssistantAction.NOTIFICATIONS -> android.R.drawable.ic_popup_reminder
-            AssistantAction.QUICK_SETTINGS -> android.R.drawable.ic_menu_preferences
-            AssistantAction.LOCK -> android.R.drawable.ic_lock_lock
-            AssistantAction.SCREENSHOT -> android.R.drawable.ic_menu_camera
-            AssistantAction.FLASHLIGHT -> android.R.drawable.ic_menu_day
-            AssistantAction.AUTO_ROTATE -> android.R.drawable.ic_menu_always_landscape_portrait
-            AssistantAction.VOLUME_UP -> android.R.drawable.ic_lock_idle_alarm
-            AssistantAction.VOLUME_DOWN -> android.R.drawable.ic_lock_silent_mode
-            else -> android.R.drawable.ic_menu_info_details
-        }
-    }
-
     private fun getLabelForAction(action: AssistantAction): String {
         return when (action) {
-            AssistantAction.HOME -> "Home"
-            AssistantAction.BACK -> "Back"
-            AssistantAction.RECENTS -> "Recents"
-            AssistantAction.NOTIFICATIONS -> "Notif"
-            AssistantAction.QUICK_SETTINGS -> "Settings"
-            AssistantAction.LOCK -> "Lock"
-            AssistantAction.SCREENSHOT -> "Capture"
-            AssistantAction.FLASHLIGHT -> "Flash"
-            AssistantAction.AUTO_ROTATE -> "Rotate"
-            AssistantAction.VOLUME_UP -> "Vol +"
-            AssistantAction.VOLUME_DOWN -> "Vol -"
-            AssistantAction.NONE -> "None"
-            else -> action.name.take(7)
+            AssistantAction.HOME -> "HOME"
+            AssistantAction.BACK -> "BACK"
+            AssistantAction.RECENTS -> "RECENTS"
+            AssistantAction.NOTIFICATIONS -> "NOTIFICATIONS"
+            AssistantAction.QUICK_SETTINGS -> "QUICK SETTINGS"
+            AssistantAction.LOCK -> "LOCK"
+            AssistantAction.SCREENSHOT -> "SCREENSHOT"
+            AssistantAction.FLASHLIGHT -> "FLASHLIGHT"
+            AssistantAction.AUTO_ROTATE -> "AUTO-ROTATE"
+            AssistantAction.VOLUME_UP -> "VOLUME UP"
+            AssistantAction.VOLUME_DOWN -> "VOLUME DOWN"
+            AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
+            AssistantAction.POWER -> "POWER"
+            AssistantAction.NONE -> "NONE"
+            else -> action.name.replace("_", " ")
         }
     }
 

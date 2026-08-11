@@ -146,6 +146,28 @@ class ActionsActivity : Activity() {
         longPressActionText.text = gesturePreferences.getLongPressAction().name
     }
 
+    private fun getFormattedActionTitle(action: AssistantAction): String {
+        return when (action) {
+            AssistantAction.HOME -> "HOME"
+            AssistantAction.BACK -> "BACK"
+            AssistantAction.RECENTS -> "RECENTS"
+            AssistantAction.NOTIFICATIONS -> "NOTIFICATIONS"
+            AssistantAction.QUICK_SETTINGS -> "QUICK SETTINGS"
+            AssistantAction.LOCK -> "LOCK"
+            AssistantAction.SCREENSHOT -> "SCREENSHOT"
+            AssistantAction.FLASHLIGHT -> "FLASHLIGHT"
+            AssistantAction.AUTO_ROTATE -> "AUTO-ROTATE"
+            AssistantAction.VOLUME_UP -> "VOLUME UP"
+            AssistantAction.VOLUME_DOWN -> "VOLUME DOWN"
+            AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
+            AssistantAction.POWER -> "POWER"
+            AssistantAction.SPLIT_SCREEN -> "SPLIT SCREEN"
+            AssistantAction.MAIN -> "MAIN"
+            AssistantAction.NONE -> "NONE"
+            else -> action.name.replace("_", " ")
+        }
+    }
+
     private inner class MenuGridPagesAdapter : RecyclerView.Adapter<MenuGridPagesAdapter.PageViewHolder>() {
 
         override fun getItemCount(): Int = 2
@@ -202,12 +224,12 @@ class ActionsActivity : Activity() {
                     }
 
                     val icon = ImageView(this@ActionsActivity).apply {
-                        setImageResource(getIconForAction(action))
+                        setImageResource(ActionIconProvider.getIconResId(action))
                         setColorFilter(if (action == AssistantAction.NONE) Color.LTGRAY else Color.BLACK)
                     }
 
                     val text = TextView(this@ActionsActivity).apply {
-                        text = if (action == AssistantAction.NONE) "None" else action.name.replace("_", " ")
+                        text = if (action == AssistantAction.NONE) "None" else getFormattedActionTitle(action)
                         setTextColor(if (action == AssistantAction.NONE) Color.GRAY else Color.DKGRAY)
                         textSize = 9f
                         gravity = Gravity.CENTER
@@ -267,7 +289,7 @@ class ActionsActivity : Activity() {
                     } else {
                         iconView.setImageResource(android.R.drawable.ic_menu_add)
                         iconView.setColorFilter(Color.LTGRAY)
-                        textView.text = "Select App"
+                        textView.text = "Empty"
                         textView.setTextColor(Color.GRAY)
                     }
 
@@ -280,23 +302,6 @@ class ActionsActivity : Activity() {
                     }
                 }
             }
-        }
-    }
-
-    private fun getIconForAction(action: AssistantAction): Int {
-        return when (action) {
-            AssistantAction.HOME -> android.R.drawable.ic_menu_compass
-            AssistantAction.BACK -> android.R.drawable.ic_menu_revert
-            AssistantAction.RECENTS -> android.R.drawable.ic_menu_recent_history
-            AssistantAction.NOTIFICATIONS -> android.R.drawable.ic_popup_reminder
-            AssistantAction.QUICK_SETTINGS -> android.R.drawable.ic_menu_preferences
-            AssistantAction.LOCK -> android.R.drawable.ic_lock_lock
-            AssistantAction.SCREENSHOT -> android.R.drawable.ic_menu_camera
-            AssistantAction.FLASHLIGHT -> android.R.drawable.ic_menu_day
-            AssistantAction.AUTO_ROTATE -> android.R.drawable.ic_menu_always_landscape_portrait
-            AssistantAction.VOLUME_UP -> android.R.drawable.ic_lock_idle_alarm
-            AssistantAction.VOLUME_DOWN -> android.R.drawable.ic_lock_silent_mode
-            else -> android.R.drawable.ic_menu_info_details
         }
     }
 

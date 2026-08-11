@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Touch Assistant"
+            android:text="ReachPoint"
             android:textColor="#111111"
             android:textSize="28sp"
             android:textStyle="bold" />
@@ -43,7 +43,7 @@
                 android:id="@+id/serviceStatusText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Touch Assistant is Stopped"
+                android:text="ReachPoint is Stopped"
                 android:textColor="#333333"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -54,13 +54,13 @@
                 android:id="@+id/startButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Start Touch Assistant" />
+                android:text="Start ReachPoint" />
 
             <Button
                 android:id="@+id/stopButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Stop Touch Assistant"
+                android:text="Stop ReachPoint"
                 android:visibility="gone" />
 
             <Button

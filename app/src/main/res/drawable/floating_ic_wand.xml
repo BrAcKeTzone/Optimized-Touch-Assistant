@@ -1,0 +1,22 @@
+﻿<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+  <!-- Button Base -->
+  <path
+      android:fillColor="#0D9488"
+      android:pathData="M32,32m-30,0a30,30 0 1,1 60,0a30,30 0 1,1 -60,0" />
+  <!-- Wand Shaft -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M20.5,45.5l18,-18l4,4l-18,18z" />
+  <!-- Wand Tip -->
+  <path
+      android:fillColor="#2DD4BF"
+      android:pathData="M38.5,27.5l4,-4l4,4l-4,4z" />
+  <!-- Sparks -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M48,18m-2,0a2,2 0 1,1 4,0a2,2 0 1,1 -4,0 M36,16m-1.5,0a1.5,1.5 0 1,1 3,0a1.5,1.5 0 1,1 -3,0 M50,28m-1.5,0a1.5,1.5 0 1,1 3,0a1.5,1.5 0 1,1 -3,0" />
+</vector>

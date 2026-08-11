@@ -1,6 +1,7 @@
 package com.bracketzone.touchassistant.service
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import com.bracketzone.touchassistant.core.AssistantAction
@@ -10,165 +11,69 @@ class TouchAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-
         instance = WeakReference(this)
+
+        // Automatically start the floating widget service when accessibility is enabled
+        val intent = Intent(this, FloatingWidgetService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
     }
 
-    override fun onAccessibilityEvent(
-        event: AccessibilityEvent?
-    ) {
-        // We don't need to inspect the screen.
-        //
-        // The service exists primarily so that we can
-        // execute Android global accessibility actions.
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Not used
     }
 
     override fun onInterrupt() {
-        // Nothing to interrupt.
+        // Not used
     }
 
     override fun onDestroy() {
-
         if (instance?.get() === this) {
             instance?.clear()
             instance = null
         }
 
+        // Automatically stop the floating widget service when accessibility is disabled
+        stopService(Intent(this, FloatingWidgetService::class.java))
+
         super.onDestroy()
     }
 
-    fun performAssistantAction(
-        action: AssistantAction
-    ): Boolean {
-
+    fun performAssistantAction(action: AssistantAction): Boolean {
         return when (action) {
-
-            // ------------------------------------------
-            // Navigation
-            // ------------------------------------------
-
-            AssistantAction.HOME -> {
-                performGlobalAction(
-                    GLOBAL_ACTION_HOME
-                )
-            }
-
-            AssistantAction.BACK -> {
-                performGlobalAction(
-                    GLOBAL_ACTION_BACK
-                )
-            }
-
-            AssistantAction.RECENTS -> {
-                performGlobalAction(
-                    GLOBAL_ACTION_RECENTS
-                )
-            }
-
-            // ------------------------------------------
-            // System panels
-            // ------------------------------------------
-
-            AssistantAction.NOTIFICATIONS -> {
-                performGlobalAction(
-                    GLOBAL_ACTION_NOTIFICATIONS
-                )
-            }
-
-            AssistantAction.QUICK_SETTINGS -> {
-                performGlobalAction(
-                    GLOBAL_ACTION_QUICK_SETTINGS
-                )
-            }
-
-            AssistantAction.POWER -> {
-                performGlobalAction(
-                    GLOBAL_ACTION_POWER_DIALOG
-                )
-            }
-
-            // ------------------------------------------
-            // Split screen
-            // ------------------------------------------
-
+            AssistantAction.HOME -> performGlobalAction(GLOBAL_ACTION_HOME)
+            AssistantAction.BACK -> performGlobalAction(GLOBAL_ACTION_BACK)
+            AssistantAction.RECENTS -> performGlobalAction(GLOBAL_ACTION_RECENTS)
+            AssistantAction.NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+            AssistantAction.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+            AssistantAction.POWER -> performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)
             AssistantAction.SPLIT_SCREEN -> {
-
-                if (
-                    Build.VERSION.SDK_INT >=
-                    Build.VERSION_CODES.N
-                ) {
-
-                    performGlobalAction(
-                        GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
-                    )
-
-                } else {
-
-                    false
-                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
+                } else false
             }
-
-            // ------------------------------------------
-            // Lock screen
-            // ------------------------------------------
-
             AssistantAction.LOCK -> {
-
-                if (
-                    Build.VERSION.SDK_INT >=
-                    Build.VERSION_CODES.P
-                ) {
-
-                    performGlobalAction(
-                        GLOBAL_ACTION_LOCK_SCREEN
-                    )
-
-                } else {
-
-                    false
-                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+                } else false
             }
-
-            // ------------------------------------------
-            // Screenshot
-            // ------------------------------------------
-
             AssistantAction.SCREENSHOT -> {
-
-                if (
-                    Build.VERSION.SDK_INT >=
-                    Build.VERSION_CODES.R
-                ) {
-
-                    performGlobalAction(
-                        GLOBAL_ACTION_TAKE_SCREENSHOT
-                    )
-
-                } else {
-
-                    false
-                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+                } else false
             }
-
-            else -> {
-                false
-            }
+            else -> false
         }
     }
 
     companion object {
+        private var instance: WeakReference<TouchAccessibilityService>? = null
 
-        private var instance:
-                WeakReference<TouchAccessibilityService>? = null
+        fun getInstance(): TouchAccessibilityService? = instance?.get()
 
-        fun getInstance():
-                TouchAccessibilityService? {
-
-            return instance?.get()
-        }
-
-        fun isEnabled(): Boolean {
-            return instance?.get() != null
-        }
+        fun isEnabled(): Boolean = instance?.get() != null
     }
 }

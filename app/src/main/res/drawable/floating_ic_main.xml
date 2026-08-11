@@ -1,0 +1,89 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 1. Solid Dark Blue Base Circle -->
+    <path
+        android:fillColor="#1555B4"
+        android:pathData="M100,100m-90,0a90,90 0 1,1 180,0a90,90 0 1,1 -180,0"/>
+
+    <!-- 2. Outer Light Blue Stylized/Sketchy Ring (Decorative border) -->
+    <path
+        android:strokeWidth="4"
+        android:strokeColor="#74C4FF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M100,15.5C53.3,15.5 15.5,53.3 15.5,100c0,46.7 37.8,84.5 84.5,84.5c46.7,0 84.5,-37.8 84.5,-84.5c0,-46.7 -37.8,-84.5 -84.5,-84.5zM100,180.5C55.6,180.5 19.5,144.4 19.5,100c0,-44.4 36.1,-80.5 80.5,-80.5c44.4,0 80.5,36.1 80.5,80.5c0,44.4 -36.1,80.5 -80.5,80.5z" />
+
+    <!-- 3. Inner Thick White Ring (Main UI structure) -->
+    <path
+        android:strokeWidth="6"
+        android:strokeColor="#FFFFFF"
+        android:pathData="M100,100m-70,0a70,70 0 1,1 140,0a70,70 0 1,1 -140,0"/>
+
+    <!-- 4. Top White Circle Container -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,30m-20,0a20,20 0 1,1 40,0a20,20 0 1,1 -40,0" />
+    <!-- 4b. Dark Blue Home Icon inside Top Circle -->
+    <path
+        android:fillColor="#1555B4"
+        android:pathData="M100,18 L88,30 H94 V38 H106 V30 H112 L100,18 Z" />
+
+    <!-- 5. Right White Circle Container -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M170,100m-20,0a20,20 0 1,1 40,0a20,20 0 1,1 -40,0" />
+    <!-- 5b. Dark Blue Back Arrow inside Right Circle -->
+    <path
+        android:fillColor="#1555B4"
+        android:pathData="M170,90 a10,10 0 0,0 -10,10 a10,10 0 0,0 2,6 L158,110 a14,14 0 0,1 -2,-10 a14,14 0 0,1 14,-14 V86 L182,100 L170,114 V110 Z" />
+
+    <!-- 6. Bottom White Circle Container -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,170m-20,0a20,20 0 1,1 40,0a20,20 0 1,1 -40,0" />
+    <!-- 6b. Dark Blue Three Dots (More) inside Bottom Circle -->
+    <path
+        android:fillColor="#1555B4"
+        android:pathData="M90,170m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0 M100,170m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0 M110,170m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0" />
+
+    <!-- 7. Left White Circle Container -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,100m-20,0a20,20 0 1,1 40,0a20,20 0 1,1 -40,0" />
+    <!-- 7b. Dark Blue Multiple Windows Icon inside Left Circle -->
+    <path
+        android:fillColor="#1555B4"
+        android:pathData="M22,96 V108 H34 V112 H18 V96 Z M26,92 V104 H38 V92 Z M34,100 V96 H30 V100 H34 Z" />
+
+    <!-- 8. Radiating Light/Touch Blue Lines in the Center -->
+    <group
+        android:pivotX="100"
+        android:pivotY="100"
+        android:rotation="15">
+        <path android:strokeWidth="3" android:strokeColor="#3F8CFF" android:strokeLineCap="round" android:pathData="M100,75V60 M121.6,83.4L131.6,73.4 M130,105H145 M121.6,126.6L131.6,136.6 M100,135V150 M78.4,126.6L68.4,136.6 M70,105H55 M78.4,83.4L68.4,73.4 M91.3,66.3L86.3,56.3 M108.7,66.3L113.7,56.3 M125.7,78.7L135.7,73.7 M133.7,91.3L143.7,86.3 M133.7,118.7L143.7,123.7 M125.7,131.3L135.7,136.3 M108.7,143.7L113.7,153.7 M91.3,143.7L86.3,153.7" />
+    </group>
+
+    <!-- 9. Central Light Blue Concentric Circles (Center of tap) -->
+    <path
+        android:fillColor="#74C4FF"
+        android:pathData="M100,100m-20,0a20,20 0 1,1 40,0a20,20 0 1,1 -40,0"/>
+    <path
+        android:strokeWidth="3"
+        android:strokeColor="#3F8CFF"
+        android:pathData="M100,100m-16,0a16,16 0 1,1 32,0a16,16 0 1,1 -32,0" />
+
+    <!-- 10. Center Blue Dot (Tap point) -->
+    <path
+        android:fillColor="#1555B4"
+        android:pathData="M100,100m-8,0a8,8 0 1,1 16,0a8,8 0 1,1 -16,0"/>
+
+    <!-- 11. Redesigned Clean White Tapping Hand -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M95.8,103.2 C93.6,101 93.6,97.4 95.8,95.2 C98,93 101.6,93 103.8,95.2 L118.5,109.9 C121.2,107.5 125,107 128.3,108.8 C131.5,106.6 135.8,106.8 138.8,109.4 C141.5,108.2 144.8,108.8 147,111 C150,114 150.2,118.8 147.5,122 L143.1,127.3 C145.2,130.8 145.7,135.2 144.1,139.2 L138.8,152.5 C136.8,157.5 131.9,160.8 126.5,160.8 H114.5 C108.2,160.8 102.3,157.7 98.7,152.5 L86.5,134.8 C84.3,131.6 84.8,127.2 87.8,124.6 C90.8,122 95.2,122.4 97.7,125.5 L103,132 L103,110.4 Z" />
+
+</vector>
