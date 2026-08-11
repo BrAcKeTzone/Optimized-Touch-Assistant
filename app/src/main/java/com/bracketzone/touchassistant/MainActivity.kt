@@ -8,9 +8,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.bracketzone.touchassistant.service.FloatingWidgetService
@@ -23,6 +26,31 @@ class MainActivity : Activity() {
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
     private lateinit var actionsButton: Button
+    private lateinit var iconLoopView: ImageView
+
+    // Array of system drawable icon resources to cycle through
+    private val iconDrawables = intArrayOf(
+        android.R.drawable.ic_menu_camera,
+        android.R.drawable.ic_menu_gallery,
+        android.R.drawable.ic_menu_manage,
+        android.R.drawable.ic_menu_preferences,
+        android.R.drawable.ic_menu_search,
+        android.R.drawable.ic_menu_send,
+        android.R.drawable.ic_menu_share,
+        android.R.drawable.ic_menu_view
+    )
+
+    private var currentIconIndex = 0
+    private val iconHandler = Handler(Looper.getMainLooper())
+    private val iconRunnable = object : Runnable {
+        override fun run() {
+            if (iconDrawables.isNotEmpty()) {
+                iconLoopView.setImageResource(iconDrawables[currentIconIndex])
+                currentIconIndex = (currentIconIndex + 1) % iconDrawables.size
+            }
+            iconHandler.postDelayed(this, 1000L) // Switch icon every 1 second
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +60,7 @@ class MainActivity : Activity() {
         startButton = findViewById(R.id.startButton)
         stopButton = findViewById(R.id.stopButton)
         actionsButton = findViewById(R.id.actionsButton)
+        iconLoopView = findViewById(R.id.iconLoopView)
 
         startButton.setOnClickListener {
             checkPermissionsAndStart()
@@ -50,17 +79,23 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         updateUIState()
+        iconHandler.post(iconRunnable) // Start loop when activity is visible
+    }
+
+    override fun onPause() {
+        super.onPause()
+        iconHandler.removeCallbacks(iconRunnable) // Stop loop to conserve memory
     }
 
     private fun checkPermissionsAndStart() {
         if (!Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, "Please allow Display Overlay permission", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.allow_overlay_permission), Toast.LENGTH_LONG).show()
             openOverlaySettings()
             return
         }
 
         if (!isAccessibilityServiceEnabled()) {
-            Toast.makeText(this, "Please enable Touch Assistant in Accessibility Settings", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.enable_accessibility), Toast.LENGTH_LONG).show()
             openAccessibilitySettings()
             return
         }
@@ -72,11 +107,11 @@ class MainActivity : Activity() {
     private fun updateUIState() {
         val isRunning = isServiceRunning(FloatingWidgetService::class.java)
         if (isRunning) {
-            serviceStatusText.text = "✓ Touch Assistant is Running"
+            serviceStatusText.text = getString(R.string.reachpoint_is_running)
             startButton.visibility = View.GONE
             stopButton.visibility = View.VISIBLE
         } else {
-            serviceStatusText.text = "Touch Assistant is Stopped"
+            serviceStatusText.text = getString(R.string.reachpoint_is_stopped)
             startButton.visibility = View.VISIBLE
             stopButton.visibility = View.GONE
         }

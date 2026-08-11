@@ -4,4 +4,15 @@
         name="accessibility_service_description">
     Provides system navigation and touch assistant actions.
 </string>
+    <string name="reachpoint">ReachPoint</string>
+    <string name="system_wide_floating_touch_controls">System-wide floating touch controls</string>
+    <string name="action_icon_carousel">Action Icon Carousel</string>
+    <string name="reachpoint_is_running">✓ ReachPoint is Running</string>
+    <string name="reachpoint_is_stopped">ReachPoint is Stopped</string>
+    <!-- Messages shown when asking user to enable permissions/settings -->
+    <string name="allow_overlay_permission">Please allow Display Overlay permission</string>
+    <string name="enable_accessibility">Please enable ReachPoint in Accessibility Settings</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="actions">Actions</string>
 </resources>
