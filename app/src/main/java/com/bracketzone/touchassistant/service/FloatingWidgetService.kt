@@ -101,14 +101,17 @@ class FloatingWidgetService : Service() {
 
     private fun createFloatingView() {
         floatingView = ImageView(this).apply {
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                setColor(Color.rgb(33, 150, 243))
-            }
-            setImageResource(android.R.drawable.ic_menu_manage)
-            setColorFilter(Color.WHITE)
+            // Load the app's official launcher icon directly
+            val appIconDrawable = packageManager.getApplicationIcon(packageName)
+            setImageDrawable(appIconDrawable)
+
+            // Ensure no background shape or color filter is applied
+            background = null
+            clearColorFilter()
+
             contentDescription = "Touch Assistant"
-            scaleType = ImageView.ScaleType.CENTER
+            scaleType = ImageView.ScaleType.FIT_CENTER
+
             alpha = 0f
             scaleX = 0f
             scaleY = 0f
