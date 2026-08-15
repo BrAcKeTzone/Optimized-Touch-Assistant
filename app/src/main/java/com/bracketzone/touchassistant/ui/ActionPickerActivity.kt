@@ -110,6 +110,7 @@ class ActionPickerActivity : Activity() {
             AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
             AssistantAction.POWER -> "POWER"
             AssistantAction.MAIN -> "MAIN"
+            AssistantAction.FAVORITE_APPS -> "FAVORITE APPS"
             AssistantAction.NONE -> "NONE"
             else -> action.name.replace("_", " ")
         }
@@ -117,6 +118,7 @@ class ActionPickerActivity : Activity() {
 
     private fun getActionDescription(action: AssistantAction): String {
         return when (action) {
+            AssistantAction.FAVORITE_APPS -> "Open the favorite apps menu page"
             AssistantAction.HOME -> "Navigate to device home screen"
             AssistantAction.BACK -> "Go back to previous screen"
             AssistantAction.RECENTS -> "Open recent app switcher"

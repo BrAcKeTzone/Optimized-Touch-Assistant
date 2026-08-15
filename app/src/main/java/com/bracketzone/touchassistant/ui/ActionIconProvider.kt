@@ -26,6 +26,7 @@ object ActionIconProvider {
             AssistantAction.BLUETOOTH -> R.drawable.ic_bluetooth
             AssistantAction.LOCATION -> R.drawable.ic_location
             AssistantAction.MOBILE_DATA -> R.drawable.ic_mobile_data
+            AssistantAction.FAVORITE_APPS -> android.R.drawable.ic_menu_agenda
 
             // Fallback for any unexpected actions
             else -> R.drawable.ic_block

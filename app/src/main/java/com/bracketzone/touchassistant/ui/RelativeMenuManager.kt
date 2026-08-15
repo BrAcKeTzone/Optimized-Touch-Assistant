@@ -216,6 +216,8 @@ class RelativeMenuManager(
         }
     }
 
+    private var menuViewPager: ViewPager2? = null // Reference ViewPager2
+
     private fun createMenuView(): View {
         val viewPager = ViewPager2(context).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -230,6 +232,7 @@ class RelativeMenuManager(
         }
 
         viewPager.adapter = OverlayMenuPagerAdapter()
+        menuViewPager = viewPager
         return viewPager
     }
 
@@ -308,7 +311,10 @@ class RelativeMenuManager(
             addView(text)
 
             setOnClickListener {
-                if (action != AssistantAction.NONE) {
+                if (action == AssistantAction.FAVORITE_APPS) {
+                    // Navigate to Page 1 (0-indexed: Page 0 is System Actions, Page 1 is Favorite Apps)
+                    menuViewPager?.setCurrentItem(1, true)
+                } else if (action != AssistantAction.NONE) {
                     dismiss()
                     onActionSelected(action)
                 }
@@ -386,6 +392,7 @@ class RelativeMenuManager(
             AssistantAction.VOLUME_DOWN -> "VOLUME DOWN"
             AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
             AssistantAction.POWER -> "POWER"
+            AssistantAction.FAVORITE_APPS -> "FAVORITE APPS"
             AssistantAction.NONE -> "NONE"
             else -> action.name.replace("_", " ")
         }

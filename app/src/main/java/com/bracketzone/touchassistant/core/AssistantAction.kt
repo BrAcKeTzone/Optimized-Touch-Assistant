@@ -16,6 +16,7 @@ enum class AssistantAction {
     NOTIFICATIONS,
     QUICK_SETTINGS,
     POWER,
+    FAVORITE_APPS,
 
 
     // Security / capture
