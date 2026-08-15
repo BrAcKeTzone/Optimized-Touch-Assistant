@@ -485,14 +485,14 @@ class FloatingWidgetService : Service() {
     }
 
     private fun executeGestureAction(action: AssistantAction) {
-        if (action == AssistantAction.MAIN) {
-            showMainMenu()
-        } else {
-            ActionExecutor(this).execute(action)
+        when (action) {
+            AssistantAction.MAIN -> showMainMenu(startPage = 0)
+            AssistantAction.FAVORITE_APPS -> showMainMenu(startPage = 1)
+            else -> ActionExecutor(this).execute(action)
         }
     }
 
-    private fun showMainMenu() {
+    private fun showMainMenu(startPage: Int = 0) {
         relativeMenuManager.dismiss()
 
         val viewWidth = if (floatingView.width > 0) floatingView.width else dp(56)
@@ -505,5 +505,7 @@ class FloatingWidgetService : Service() {
             anchorWidth = viewWidth,
             anchorHeight = viewHeight
         )
+
+        // Optionally pass initial page parameter to showMenu to land directly on page 1
     }
 }
