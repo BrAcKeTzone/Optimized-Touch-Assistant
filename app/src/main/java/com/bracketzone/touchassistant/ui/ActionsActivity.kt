@@ -161,7 +161,6 @@ class ActionsActivity : Activity() {
             AssistantAction.VOLUME_DOWN -> "VOLUME DOWN"
             AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
             AssistantAction.POWER -> "POWER"
-            AssistantAction.SPLIT_SCREEN -> "SPLIT SCREEN"
             AssistantAction.MAIN -> "MAIN"
             AssistantAction.NONE -> "NONE"
             else -> action.name.replace("_", " ")

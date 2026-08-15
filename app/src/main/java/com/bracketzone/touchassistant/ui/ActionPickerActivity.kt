@@ -109,7 +109,6 @@ class ActionPickerActivity : Activity() {
             AssistantAction.VOLUME_DOWN -> "VOLUME DOWN"
             AssistantAction.MUTE_UNMUTE -> "MUTE/UNMUTE"
             AssistantAction.POWER -> "POWER"
-            AssistantAction.SPLIT_SCREEN -> "SPLIT SCREEN"
             AssistantAction.MAIN -> "MAIN"
             AssistantAction.NONE -> "NONE"
             else -> action.name.replace("_", " ")
@@ -130,7 +129,6 @@ class ActionPickerActivity : Activity() {
             AssistantAction.VOLUME_UP -> "Increase media volume level"
             AssistantAction.VOLUME_DOWN -> "Decrease media volume level"
             AssistantAction.MUTE_UNMUTE -> "Toggle ringer mode between sound and silent"
-            AssistantAction.SPLIT_SCREEN -> "Toggle split-screen mode"
             AssistantAction.NONE -> "No action assigned"
             else -> "Execute ${getFormattedActionTitle(action).lowercase()} action"
         }

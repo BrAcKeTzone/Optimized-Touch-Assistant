@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F7">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Appearance"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:paddingBottom="12dp" />
+
+        <!-- Size Slider -->
+        <TextView
+            android:id="@+id/sizeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Button size: 56 dp"
+            android:textColor="#333333"
+            android:paddingTop="8dp" />
+
+        <SeekBar
+            android:id="@+id/sizeSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="80" />
+
+        <!-- Opacity Slider -->
+        <TextView
+            android:id="@+id/opacityLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opacity: 100%"
+            android:textColor="#333333"
+            android:paddingTop="12dp" />
+
+        <SeekBar
+            android:id="@+id/opacitySeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose icon"
+            android:textStyle="bold"
+            android:paddingTop="16dp"
+            android:textColor="#111111" />
+
+        <GridLayout
+            android:id="@+id/iconGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="3"
+            android:useDefaultMargins="true"
+            android:paddingTop="8dp" />
+
+    </LinearLayout>
+
+</ScrollView>
+

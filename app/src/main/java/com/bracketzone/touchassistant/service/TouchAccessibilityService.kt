@@ -50,11 +50,6 @@ class TouchAccessibilityService : AccessibilityService() {
             AssistantAction.NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
             AssistantAction.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             AssistantAction.POWER -> performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)
-            AssistantAction.SPLIT_SCREEN -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
-                } else false
-            }
             AssistantAction.LOCK -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)

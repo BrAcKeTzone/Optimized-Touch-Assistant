@@ -46,9 +46,6 @@ class ActionExecutor(
                 toggleMute()
             }
 
-            AssistantAction.TOGGLE_RINGER -> {
-                toggleRinger()
-            }
 
             // ------------------------------------------
             // Hardware
@@ -68,14 +65,6 @@ class ActionExecutor(
 
             AssistantAction.MAX_BRIGHTNESS -> {
                 setMaximumBrightness()
-            }
-
-            // ------------------------------------------
-            // Synchronization
-            // ------------------------------------------
-
-            AssistantAction.TOGGLE_SYNC -> {
-                toggleSync()
             }
 
             // ------------------------------------------
@@ -100,11 +89,6 @@ class ActionExecutor(
                 )
             }
 
-            AssistantAction.AIRPLANE_MODE -> {
-                openSettings(
-                    Settings.ACTION_AIRPLANE_MODE_SETTINGS
-                )
-            }
 
             AssistantAction.MOBILE_DATA -> {
                 openMobileNetworkSettings()
@@ -142,7 +126,6 @@ class ActionExecutor(
             AssistantAction.NOTIFICATIONS,
             AssistantAction.QUICK_SETTINGS,
             AssistantAction.POWER,
-            AssistantAction.SPLIT_SCREEN,
             AssistantAction.LOCK,
             AssistantAction.SCREENSHOT -> {
 
@@ -236,34 +219,6 @@ class ActionExecutor(
         }
     }
 
-    // ==================================================
-    // RINGER MODE
-    // ==================================================
-
-    private fun toggleRinger() {
-
-        when (audioManager.ringerMode) {
-
-            AudioManager.RINGER_MODE_NORMAL -> {
-
-                audioManager.ringerMode =
-                    AudioManager.RINGER_MODE_SILENT
-            }
-
-            AudioManager.RINGER_MODE_SILENT,
-            AudioManager.RINGER_MODE_VIBRATE -> {
-
-                audioManager.ringerMode =
-                    AudioManager.RINGER_MODE_NORMAL
-            }
-
-            else -> {
-
-                audioManager.ringerMode =
-                    AudioManager.RINGER_MODE_NORMAL
-            }
-        }
-    }
 
     // ==================================================
     // FLASHLIGHT
@@ -428,34 +383,6 @@ class ActionExecutor(
 
             showToast(
                 "Unable to change brightness"
-            )
-        }
-    }
-
-    // ==================================================
-    // MASTER SYNC
-    // ==================================================
-
-    @Suppress("DEPRECATION")
-    private fun toggleSync() {
-
-        try {
-
-            val current =
-                android.content.ContentResolver
-                    .getMasterSyncAutomatically()
-
-            android.content.ContentResolver
-                .setMasterSyncAutomatically(
-                    !current
-                )
-
-        } catch (
-            _: Exception
-        ) {
-
-            showToast(
-                "Unable to change synchronization"
             )
         }
     }

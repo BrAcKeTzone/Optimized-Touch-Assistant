@@ -17,8 +17,6 @@ enum class AssistantAction {
     QUICK_SETTINGS,
     POWER,
 
-    // Window management
-    SPLIT_SCREEN,
 
     // Security / capture
     LOCK,
@@ -28,7 +26,6 @@ enum class AssistantAction {
     VOLUME_UP,
     VOLUME_DOWN,
     MUTE_UNMUTE,
-    TOGGLE_RINGER,
 
     // Hardware
     FLASHLIGHT,
@@ -37,13 +34,9 @@ enum class AssistantAction {
     AUTO_ROTATE,
     MAX_BRIGHTNESS,
 
-    // Synchronization
-    TOGGLE_SYNC,
-
     // Connectivity
     WI_FI,
     BLUETOOTH,
     LOCATION,
-    AIRPLANE_MODE,
     MOBILE_DATA
 }
