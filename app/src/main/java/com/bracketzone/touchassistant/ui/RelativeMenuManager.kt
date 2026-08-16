@@ -35,7 +35,9 @@ class RelativeMenuManager(
 ) {
 
     private var rootOverlayView: FrameLayout? = null
-    private var menuContainer: View? = null
+    var menuContainer: View? = null
+        private set
+
     private var anchorFloatingButton: View? = null
     private val menuPreferences = MenuPreferences(context)
     private var isDismissing = false
@@ -75,7 +77,6 @@ class RelativeMenuManager(
         val targetCenterX = anchorX + (anchorWidth / 2)
         val targetCenterY = anchorY + (anchorHeight / 2)
 
-        // Calculate safe horizontal & vertical bounds accounting for system insets
         val minX = insets.left + margin
         val maxX = (screenWidth - menuWidth - insets.right - margin).coerceAtLeast(minX)
 
@@ -216,7 +217,7 @@ class RelativeMenuManager(
         }
     }
 
-    private var menuViewPager: ViewPager2? = null // Reference ViewPager2
+    private var menuViewPager: ViewPager2? = null
 
     private fun createMenuView(): View {
         val viewPager = ViewPager2(context).apply {
@@ -311,12 +312,18 @@ class RelativeMenuManager(
             addView(text)
 
             setOnClickListener {
-                if (action == AssistantAction.FAVORITE_APPS) {
-                    // Navigate to Page 1 (0-indexed: Page 0 is System Actions, Page 1 is Favorite Apps)
-                    menuViewPager?.setCurrentItem(1, true)
-                } else if (action != AssistantAction.NONE) {
-                    dismiss()
-                    onActionSelected(action)
+                when (action) {
+                    AssistantAction.FAVORITE_APPS -> {
+                        menuViewPager?.setCurrentItem(1, true)
+                    }
+                    AssistantAction.VOLUME_UP, AssistantAction.VOLUME_DOWN, AssistantAction.MUTE_UNMUTE -> {
+                        onActionSelected(action)
+                    }
+                    AssistantAction.NONE -> {}
+                    else -> {
+                        dismiss()
+                        onActionSelected(action)
+                    }
                 }
             }
         }

@@ -6,8 +6,10 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.view.View
 import android.widget.Toast
 import com.bracketzone.touchassistant.service.TouchAccessibilityService
+import com.bracketzone.touchassistant.ui.VolumeSliderManager
 
 class ActionExecutor(
     private val context: Context
@@ -18,8 +20,11 @@ class ActionExecutor(
             Context.AUDIO_SERVICE
         ) as AudioManager
 
+    private val volumeSliderManager = VolumeSliderManager(context)
+
     fun execute(
-        action: AssistantAction
+        action: AssistantAction,
+        anchorView: View? = null
     ) {
 
         // First, check whether this is an
@@ -35,11 +40,11 @@ class ActionExecutor(
             // ------------------------------------------
 
             AssistantAction.VOLUME_UP -> {
-                volumeUp()
+                volumeUp(anchorView)
             }
 
             AssistantAction.VOLUME_DOWN -> {
-                volumeDown()
+                volumeDown(anchorView)
             }
 
             AssistantAction.MUTE_UNMUTE -> {
@@ -159,20 +164,12 @@ class ActionExecutor(
     // VOLUME
     // ==================================================
 
-    private fun volumeUp() {
-
-        audioManager.adjustVolume(
-            AudioManager.ADJUST_RAISE,
-            AudioManager.FLAG_SHOW_UI
-        )
+    private fun volumeUp(anchorView: View?) {
+        volumeSliderManager.adjustVolume(AudioManager.ADJUST_RAISE, anchorView)
     }
 
-    private fun volumeDown() {
-
-        audioManager.adjustVolume(
-            AudioManager.ADJUST_LOWER,
-            AudioManager.FLAG_SHOW_UI
-        )
+    private fun volumeDown(anchorView: View?) {
+        volumeSliderManager.adjustVolume(AudioManager.ADJUST_LOWER, anchorView)
     }
 
     // ==================================================
@@ -189,7 +186,7 @@ class ActionExecutor(
             audioManager.adjustStreamVolume(
                 AudioManager.STREAM_RING,
                 AudioManager.ADJUST_TOGGLE_MUTE,
-                AudioManager.FLAG_SHOW_UI
+                0
             )
 
         } else {

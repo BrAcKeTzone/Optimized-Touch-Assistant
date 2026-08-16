@@ -11,10 +11,8 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Rect
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -70,8 +68,9 @@ class FloatingWidgetService : Service() {
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
+        // Pass relativeMenuManager.menuContainer into ActionExecutor to locate the volume slider directly above it
         relativeMenuManager = RelativeMenuManager(this, windowManager) { action ->
-            ActionExecutor(this).execute(action)
+            ActionExecutor(this).execute(action, relativeMenuManager.menuContainer)
         }
 
         gestureDetector = GestureDetector(
@@ -244,6 +243,7 @@ class FloatingWidgetService : Service() {
         }
         return START_STICKY
     }
+
     override fun onDestroy() {
         relativeMenuManager.dismiss()
         idleHandler.removeCallbacks(idleRunnable)
@@ -505,7 +505,5 @@ class FloatingWidgetService : Service() {
             anchorWidth = viewWidth,
             anchorHeight = viewHeight
         )
-
-        // Optionally pass initial page parameter to showMenu to land directly on page 1
     }
 }
