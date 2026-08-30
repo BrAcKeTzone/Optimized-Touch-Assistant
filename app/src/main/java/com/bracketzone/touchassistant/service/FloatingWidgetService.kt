@@ -70,7 +70,7 @@ class FloatingWidgetService : Service() {
 
         // Pass relativeMenuManager.menuContainer into ActionExecutor to locate the volume slider directly above it
         relativeMenuManager = RelativeMenuManager(this, windowManager) { action ->
-            ActionExecutor(this).execute(action, relativeMenuManager.menuContainer)
+            ActionExecutor(this, relativeMenuManager.volumeSliderManager).execute(action, relativeMenuManager.menuContainer)
         }
 
         gestureDetector = GestureDetector(
@@ -100,11 +100,9 @@ class FloatingWidgetService : Service() {
 
     private fun createFloatingView() {
         floatingView = ImageView(this).apply {
-            // Load the app's official launcher icon directly
             val appIconDrawable = packageManager.getApplicationIcon(packageName)
             setImageDrawable(appIconDrawable)
 
-            // Ensure no background shape or color filter is applied
             background = null
             clearColorFilter()
 
@@ -236,7 +234,6 @@ class FloatingWidgetService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Stop immediately if accessibility service is not active
         if (!TouchAccessibilityService.isEnabled()) {
             stopSelf()
             return START_NOT_STICKY
@@ -488,7 +485,7 @@ class FloatingWidgetService : Service() {
         when (action) {
             AssistantAction.MAIN -> showMainMenu(startPage = 0)
             AssistantAction.FAVORITE_APPS -> showMainMenu(startPage = 1)
-            else -> ActionExecutor(this).execute(action)
+            else -> ActionExecutor(this, relativeMenuManager.volumeSliderManager).execute(action)
         }
     }
 

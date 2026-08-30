@@ -25,6 +25,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.bracketzone.touchassistant.core.ActionExecutor
 import com.bracketzone.touchassistant.core.AssistantAction
 import com.bracketzone.touchassistant.preferences.MenuPreferences
 
@@ -41,6 +42,9 @@ class RelativeMenuManager(
     private var anchorFloatingButton: View? = null
     private val menuPreferences = MenuPreferences(context)
     private var isDismissing = false
+
+    // Initialize VolumeSliderManager to coordinate closing together
+    val volumeSliderManager = VolumeSliderManager(context)
 
     private fun getSafeInsets(): Rect {
         val rect = Rect()
@@ -144,6 +148,10 @@ class RelativeMenuManager(
 
     fun dismiss() {
         if (isDismissing) return
+
+        // Ensure volume slider manager closes when menu is dismissed
+        volumeSliderManager.dismissSlider()
+
         val container = menuContainer ?: return
 
         if (rootOverlayView?.isAttachedToWindow == true) {
@@ -157,6 +165,9 @@ class RelativeMenuManager(
     }
 
     private fun dismissImmediate() {
+        // Ensure volume slider manager closes immediately as well
+        volumeSliderManager.dismissSlider()
+
         rootOverlayView?.let { view ->
             if (view.isAttachedToWindow) {
                 try {
@@ -317,7 +328,7 @@ class RelativeMenuManager(
                         menuViewPager?.setCurrentItem(1, true)
                     }
                     AssistantAction.VOLUME_UP, AssistantAction.VOLUME_DOWN, AssistantAction.MUTE_UNMUTE -> {
-                        onActionSelected(action)
+                        ActionExecutor(context, volumeSliderManager).execute(action, menuContainer)
                     }
                     AssistantAction.NONE -> {}
                     else -> {

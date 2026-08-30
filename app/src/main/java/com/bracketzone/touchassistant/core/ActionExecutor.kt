@@ -12,15 +12,14 @@ import com.bracketzone.touchassistant.service.TouchAccessibilityService
 import com.bracketzone.touchassistant.ui.VolumeSliderManager
 
 class ActionExecutor(
-    private val context: Context
+    private val context: Context,
+    private val volumeSliderManager: VolumeSliderManager = VolumeSliderManager(context)
 ) {
 
     private val audioManager =
         context.getSystemService(
             Context.AUDIO_SERVICE
         ) as AudioManager
-
-    private val volumeSliderManager = VolumeSliderManager(context)
 
     fun execute(
         action: AssistantAction,

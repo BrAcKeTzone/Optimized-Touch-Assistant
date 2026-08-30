@@ -90,18 +90,14 @@ class VolumeSliderManager(private val context: Context) {
             val location = IntArray(2)
             anchorView.getLocationOnScreen(location)
 
-            // Center horizontally relative to menu width
             posX = location[0] + (anchorView.width / 2) - (sliderWidth / 2)
 
-            // Calculate screen boundary constraints
             val screenWidth = context.resources.displayMetrics.widthPixels
             posX = posX.coerceIn(dp(12), screenWidth - sliderWidth - dp(12))
 
-            // Small 6dp margin directly above relative menu manager
             val smallMargin = dp(6)
             posY = location[1] - sliderHeight - smallMargin
 
-            // If top margin overflows screen top, display it below menu instead
             if (posY < dp(36)) {
                 posY = location[1] + anchorView.height + smallMargin
             }
@@ -111,7 +107,6 @@ class VolumeSliderManager(private val context: Context) {
             sliderWidth,
             sliderHeight,
             overlayType,
-            // Added FLAG_LAYOUT_IN_SCREEN to align with RelativeMenuManager's coordinate space
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
@@ -120,7 +115,6 @@ class VolumeSliderManager(private val context: Context) {
             gravity = Gravity.TOP or Gravity.START
             x = posX
             y = posY
-            // Match display cutout mode as well to ensure perfect coordinate sync
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
@@ -132,7 +126,8 @@ class VolumeSliderManager(private val context: Context) {
         } catch (_: Exception) {}
     }
 
-    private fun dismissSlider() {
+    fun dismissSlider() {
+        handler.removeCallbacks(hideRunnable)
         sliderView?.let { view ->
             view.animate()
                 .alpha(0f)
@@ -145,6 +140,8 @@ class VolumeSliderManager(private val context: Context) {
                         sliderView = null
                     }
                 })
+        } ?: run {
+            sliderView = null
         }
     }
 
