@@ -16,10 +16,13 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.net.toUri
+import com.bracketzone.touchassistant.core.ConfigManager
 import com.bracketzone.touchassistant.service.FloatingWidgetService
 import com.bracketzone.touchassistant.service.TouchAccessibilityService
 import com.bracketzone.touchassistant.ui.ActionsActivity
-import androidx.core.net.toUri
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class MainActivity : Activity() {
 
@@ -49,8 +52,13 @@ class MainActivity : Activity() {
                 iconLoopView.setImageResource(iconDrawables[currentIconIndex])
                 currentIconIndex = (currentIconIndex + 1) % iconDrawables.size
             }
-            iconHandler.postDelayed(this, 1000L) // Switch icon every 1 second
+            iconHandler.postDelayed(this, 1000L)
         }
+    }
+
+    companion object {
+        private const val REQUEST_CODE_EXPORT = 1001
+        private const val REQUEST_CODE_IMPORT = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,17 +83,78 @@ class MainActivity : Activity() {
         actionsButton.setOnClickListener {
             startActivity(Intent(this, ActionsActivity::class.java))
         }
+
+        // Optional: If you have export/import buttons in your layout, wire them up here:
+         findViewById<Button>(R.id.exportButton)?.setOnClickListener { exportConfig() }
+         findViewById<Button>(R.id.importButton)?.setOnClickListener { importConfig() }
     }
 
     override fun onResume() {
         super.onResume()
         updateUIState()
-        iconHandler.post(iconRunnable) // Start loop when activity is visible
+        iconHandler.post(iconRunnable)
     }
 
     override fun onPause() {
         super.onPause()
-        iconHandler.removeCallbacks(iconRunnable) // Stop loop to conserve memory
+        iconHandler.removeCallbacks(iconRunnable)
+    }
+
+    // --- Export / Import triggers ---
+
+    private fun exportConfig() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, "touch_assistant_layout.json")
+        }
+        startActivityForResult(intent, REQUEST_CODE_EXPORT)
+    }
+
+    private fun importConfig() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+        }
+        startActivityForResult(intent, REQUEST_CODE_IMPORT)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && data != null) {
+            val uri: Uri = data.data ?: return
+            try {
+                when (requestCode) {
+                    REQUEST_CODE_EXPORT -> {
+                        contentResolver.openOutputStream(uri)?.use { outputStream ->
+                            val jsonString = ConfigManager.exportToJson(this)
+                            outputStream.write(jsonString.toByteArray())
+                            Toast.makeText(this, "Layout exported successfully", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    REQUEST_CODE_IMPORT -> {
+                        contentResolver.openInputStream(uri)?.use { inputStream ->
+                            val reader = BufferedReader(InputStreamReader(inputStream))
+                            val stringBuilder = StringBuilder()
+                            var line: String? = reader.readLine()
+                            while (line != null) {
+                                stringBuilder.append(line)
+                                line = reader.readLine()
+                            }
+                            val success = ConfigManager.importFromJson(this, stringBuilder.toString())
+                            if (success) {
+                                Toast.makeText(this, "Layout imported successfully", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Failed to parse configuration file", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun checkPermissionsAndStart() {

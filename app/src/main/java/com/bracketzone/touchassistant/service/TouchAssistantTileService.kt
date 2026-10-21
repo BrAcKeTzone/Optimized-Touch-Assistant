@@ -2,7 +2,6 @@ package com.bracketzone.touchassistant.service
 
 import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -58,14 +57,11 @@ class TouchAssistantTileService : TileService() {
     private fun updateTileState() {
         val tile = qsTile ?: return
 
-        // Programmatically set a clean circular icon to prevent white-square/tint issues
-        tile.icon = android.graphics.drawable.Icon.createWithResource(
-            this,
-            android.R.drawable.presence_online // Or use a custom circular drawable if you prefer
-        )
-
-        // Alternatively, use a custom shape drawable circle programmatically:
-        // tile.icon = android.graphics.drawable.Icon.createWithBitmap(createCircleBitmap())
+        // REMOVE THIS SECTION so it uses the vector icon declared in AndroidManifest.xml
+        // tile.icon = android.graphics.drawable.Icon.createWithResource(
+        //     this,
+        //     android.R.drawable.presence_online
+        // )
 
         val isRunning = TouchAccessibilityService.isEnabled() && FloatingWidgetService.isServiceRunning(this)
 
