@@ -5,10 +5,12 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PixelFormat
@@ -279,6 +281,17 @@ class FloatingWidgetService : Service() {
         private const val CUTOUT_NONE = 0
         private const val CUTOUT_LEFT = 1
         private const val CUTOUT_RIGHT = 2
+
+        fun isServiceRunning(context: Context): Boolean {
+            val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager ?: return false
+            @Suppress("DEPRECATION")
+            for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+                if (FloatingWidgetService::class.java.name == service.service.className) {
+                    return true
+                }
+            }
+            return false
+        }
     }
 
     private fun handleTouch(event: MotionEvent): Boolean {
