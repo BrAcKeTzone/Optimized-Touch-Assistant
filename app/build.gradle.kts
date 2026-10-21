@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.bracketzone.touchassistant"
+    namespace = "com.bracketzone.reachpoint"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.bracketzone.touchassistant"
+        applicationId = "com.bracketzone.reachpoint"
         minSdk = 30
         targetSdk = 36
         versionCode = 1

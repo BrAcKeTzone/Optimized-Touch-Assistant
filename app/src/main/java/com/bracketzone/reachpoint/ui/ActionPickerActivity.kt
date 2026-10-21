@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.ui
+package com.bracketzone.reachpoint.ui
 
 import android.app.Activity
 import android.content.Intent
@@ -11,8 +11,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bracketzone.touchassistant.R
-import com.bracketzone.touchassistant.core.AssistantAction
+import com.bracketzone.reachpoint.R
+import com.bracketzone.reachpoint.core.AssistantAction
 
 class ActionPickerActivity : Activity() {
 

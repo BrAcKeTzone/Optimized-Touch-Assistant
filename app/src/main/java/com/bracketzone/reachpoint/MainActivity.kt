@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant
+package com.bracketzone.reachpoint
 
 import android.app.Activity
 import android.app.ActivityManager
@@ -17,10 +17,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.net.toUri
-import com.bracketzone.touchassistant.core.ConfigManager
-import com.bracketzone.touchassistant.service.FloatingWidgetService
-import com.bracketzone.touchassistant.service.TouchAccessibilityService
-import com.bracketzone.touchassistant.ui.ActionsActivity
+import com.bracketzone.reachpoint.core.ConfigManager
+import com.bracketzone.reachpoint.service.FloatingWidgetService
+import com.bracketzone.reachpoint.service.TouchAccessibilityService
+import com.bracketzone.reachpoint.ui.ActionsActivity
 import java.io.BufferedReader
 import java.io.InputStreamReader
 

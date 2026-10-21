@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.core
+package com.bracketzone.reachpoint.core
 
 enum class AssistantAction {
 

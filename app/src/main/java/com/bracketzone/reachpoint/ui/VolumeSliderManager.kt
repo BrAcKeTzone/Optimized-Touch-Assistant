@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.ui
+package com.bracketzone.reachpoint.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter

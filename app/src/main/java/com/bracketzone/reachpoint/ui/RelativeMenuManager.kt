@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.ui
+package com.bracketzone.reachpoint.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -25,9 +25,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.bracketzone.touchassistant.core.ActionExecutor
-import com.bracketzone.touchassistant.core.AssistantAction
-import com.bracketzone.touchassistant.preferences.MenuPreferences
+import com.bracketzone.reachpoint.core.ActionExecutor
+import com.bracketzone.reachpoint.core.AssistantAction
+import com.bracketzone.reachpoint.preferences.MenuPreferences
 
 class RelativeMenuManager(
     private val context: Context,

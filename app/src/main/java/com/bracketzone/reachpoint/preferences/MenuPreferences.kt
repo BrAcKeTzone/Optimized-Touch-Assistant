@@ -1,8 +1,8 @@
-package com.bracketzone.touchassistant.preferences
+package com.bracketzone.reachpoint.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.bracketzone.touchassistant.core.AssistantAction
+import com.bracketzone.reachpoint.core.AssistantAction
 
 class MenuPreferences(context: Context) {
 

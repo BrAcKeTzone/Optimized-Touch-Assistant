@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.core
+package com.bracketzone.reachpoint.core
 
 import android.content.Context
 import android.content.Intent
@@ -8,8 +8,8 @@ import android.os.Build
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
-import com.bracketzone.touchassistant.service.TouchAccessibilityService
-import com.bracketzone.touchassistant.ui.VolumeSliderManager
+import com.bracketzone.reachpoint.service.TouchAccessibilityService
+import com.bracketzone.reachpoint.ui.VolumeSliderManager
 
 class ActionExecutor(
     private val context: Context,

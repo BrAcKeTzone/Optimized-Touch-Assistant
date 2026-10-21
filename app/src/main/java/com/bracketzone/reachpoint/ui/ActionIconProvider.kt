@@ -1,7 +1,7 @@
-package com.bracketzone.touchassistant.ui
+package com.bracketzone.reachpoint.ui
 
-import com.bracketzone.touchassistant.R
-import com.bracketzone.touchassistant.core.AssistantAction
+import com.bracketzone.reachpoint.R
+import com.bracketzone.reachpoint.core.AssistantAction
 
 object ActionIconProvider {
     fun getIconResId(action: AssistantAction): Int {

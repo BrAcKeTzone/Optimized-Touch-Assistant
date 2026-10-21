@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.service
+package com.bracketzone.reachpoint.service
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -9,7 +9,7 @@ import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
-import com.bracketzone.touchassistant.MainActivity
+import com.bracketzone.reachpoint.MainActivity
 
 @RequiresApi(Build.VERSION_CODES.N)
 class TouchAssistantTileService : TileService() {

@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.service
+package com.bracketzone.reachpoint.service
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -30,10 +30,10 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
-import com.bracketzone.touchassistant.core.ActionExecutor
-import com.bracketzone.touchassistant.core.AssistantAction
-import com.bracketzone.touchassistant.preferences.GesturePreferences
-import com.bracketzone.touchassistant.ui.RelativeMenuManager
+import com.bracketzone.reachpoint.core.ActionExecutor
+import com.bracketzone.reachpoint.core.AssistantAction
+import com.bracketzone.reachpoint.preferences.GesturePreferences
+import com.bracketzone.reachpoint.ui.RelativeMenuManager
 
 private const val IDLE_DELAY_MS = 3_000L
 private const val IDLE_ALPHA = 0.3f

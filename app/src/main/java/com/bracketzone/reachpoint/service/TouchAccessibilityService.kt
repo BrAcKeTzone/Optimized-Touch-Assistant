@@ -1,10 +1,10 @@
-package com.bracketzone.touchassistant.service
+package com.bracketzone.reachpoint.service
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
-import com.bracketzone.touchassistant.core.AssistantAction
+import com.bracketzone.reachpoint.core.AssistantAction
 import java.lang.ref.WeakReference
 
 class TouchAccessibilityService : AccessibilityService() {

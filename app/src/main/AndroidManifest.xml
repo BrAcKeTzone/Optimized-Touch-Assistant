@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.bracketzone.touchassistant">
+    package="com.bracketzone.reachpoint">
 
     <!-- Floating overlay -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
     <uses-permission
         android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
@@ -32,8 +34,6 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
-
-
     <application
         android:supportsRtl="true"
         android:theme="@style/Theme.TouchAssistant"
@@ -43,7 +43,7 @@
         tools:replace="android:icon,android:roundIcon">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.bracketzone.reachpoint.MainActivity"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round">
@@ -54,43 +54,39 @@
         </activity>
 
         <activity
-            android:name=".ui.AppPickerActivity"
+            android:name="com.bracketzone.reachpoint.ui.AppPickerActivity"
             android:exported="false"
             android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
 
         <activity
-            android:name=".ui.ActionsActivity"
+            android:name="com.bracketzone.reachpoint.ui.ActionsActivity"
             android:exported="false"
             android:label="Actions" />
 
         <activity
-            android:name=".ui.ActionPickerActivity"
+            android:name="com.bracketzone.reachpoint.ui.ActionPickerActivity"
             android:exported="false"
             android:label="Select Action" />
 
         <!-- Accessibility Service -->
         <service
-            android:name=".service.TouchAccessibilityService"
+            android:name="com.bracketzone.reachpoint.service.TouchAccessibilityService"
             android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
 
             <intent-filter>
-
                 <action
                     android:name="android.accessibilityservice.AccessibilityService" />
-
             </intent-filter>
 
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
-
         </service>
-
 
         <!-- Floating Overlay Service -->
         <service
-            android:name=".service.FloatingWidgetService"
+            android:name="com.bracketzone.reachpoint.service.FloatingWidgetService"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:exported="false"
             android:enabled="true"
@@ -99,12 +95,11 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="floating_touch_assistant_overlay" />
-
         </service>
 
         <!-- Quick Settings Tile Service (Control Center Toggle) -->
         <service
-            android:name=".service.TouchAssistantTileService"
+            android:name="com.bracketzone.reachpoint.service.TouchAssistantTileService"
             android:exported="true"
             android:icon="@drawable/ic_tile_circle_dot"
             android:label="@string/app_name"

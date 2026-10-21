@@ -1,8 +1,7 @@
-package com.bracketzone.touchassistant.ui
+package com.bracketzone.reachpoint.ui
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.os.Bundle
@@ -13,7 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bracketzone.touchassistant.R
+import com.bracketzone.reachpoint.R
 
 class AppPickerActivity : Activity() {
 

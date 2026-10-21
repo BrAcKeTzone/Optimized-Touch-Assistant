@@ -12,7 +12,7 @@ practical - R8/minification enabled for release builds - Vector
 Drawables instead of large raster assets - SharedPreferences instead of
 a heavy database/ORM
 
-Package: `com.bracketzone.touchassistant`
+Package: `reachpoint`
 
 ------------------------------------------------------------------------
 
@@ -192,7 +192,7 @@ Long press  → NOTIFICATIONS
 Current package:
 
 ``` text
-com.bracketzone.touchassistant.preferences
+reachpoint.preferences
 ```
 
 Current class:
@@ -551,7 +551,7 @@ The temporary Toast inside this function should eventually be removed.
 Package:
 
 ``` text
-com.bracketzone.touchassistant.core
+reachpoint.core
 ```
 
 The enum is intended to contain actions including:
@@ -632,7 +632,7 @@ NONE
 Package:
 
 ``` text
-com.bracketzone.touchassistant.service
+reachpoint.service
 ```
 
 Class:
@@ -717,7 +717,7 @@ Current code checks API R/API 30+ for screenshot.
 Package:
 
 ``` text
-com.bracketzone.touchassistant.core
+reachpoint.core
 ```
 
 Class:

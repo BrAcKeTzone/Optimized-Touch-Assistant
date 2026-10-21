@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant
+package com.bracketzone.reachpoint
 
 import org.junit.Test
 

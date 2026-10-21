@@ -1,4 +1,4 @@
-package com.bracketzone.touchassistant.ui
+package com.bracketzone.reachpoint.ui
 
 import android.app.Activity
 import android.content.Intent
@@ -15,10 +15,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.bracketzone.touchassistant.R
-import com.bracketzone.touchassistant.core.AssistantAction
-import com.bracketzone.touchassistant.preferences.GesturePreferences
-import com.bracketzone.touchassistant.preferences.MenuPreferences
+import com.bracketzone.reachpoint.R
+import com.bracketzone.reachpoint.core.AssistantAction
+import com.bracketzone.reachpoint.preferences.GesturePreferences
+import com.bracketzone.reachpoint.preferences.MenuPreferences
 
 class ActionsActivity : Activity() {
 
