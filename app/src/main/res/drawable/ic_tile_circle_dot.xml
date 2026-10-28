@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Outer Hollow Circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M12,2a10,10 0,1 1,0 20a10,10 0,1 1,0 -20" />
+
+    <!-- Inner Solid Dot -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,10a2,2 0,1 0,0 4a2,2 0,1 0,0 -4" />
+</vector>

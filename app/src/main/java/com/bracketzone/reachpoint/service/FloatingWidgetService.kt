@@ -30,6 +30,7 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
+import com.bracketzone.reachpoint.R
 import com.bracketzone.reachpoint.core.ActionExecutor
 import com.bracketzone.reachpoint.core.AssistantAction
 import com.bracketzone.reachpoint.preferences.GesturePreferences
@@ -102,14 +103,16 @@ class FloatingWidgetService : Service() {
 
     private fun createFloatingView() {
         floatingView = ImageView(this).apply {
-            val appIconDrawable = packageManager.getApplicationIcon(packageName)
-            setImageDrawable(appIconDrawable)
+            // Use fixed vector asset instead of getApplicationIcon() to prevent system icon pack/theme masking
+            setImageResource(R.drawable.ic_tile_circle_dot)
 
-            background = null
+            // Force a static circular background that is immune to system shape changes
+            background = getDrawable(R.drawable.bg_floating_circle)
             clearColorFilter()
 
-            contentDescription = "Touch Assistant"
-            scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "ReachPoint"
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            setPadding(dp(12), dp(12), dp(12), dp(12))
 
             alpha = 0f
             scaleX = 0f
@@ -200,16 +203,16 @@ class FloatingWidgetService : Service() {
     }
 
     private fun startForegroundServiceNotification() {
-        val channelId = "touch_assistant_service"
+        val channelId = "reachpoint_service"
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Touch Assistant",
+                "ReachPoint",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Touch Assistant floating overlay"
+                description = "ReachPoint floating overlay"
                 setShowBadge(false)
             }
             notificationManager.createNotificationChannel(channel)
@@ -217,17 +220,17 @@ class FloatingWidgetService : Service() {
 
         val notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(this, channelId)
-                .setContentTitle("Touch Assistant")
+                .setContentTitle("ReachPoint")
                 .setContentText("Floating assistant is active")
-                .setSmallIcon(android.R.drawable.ic_menu_manage)
+                .setSmallIcon(R.drawable.ic_tile_circle_dot)
                 .setOngoing(true)
                 .build()
         } else {
             @Suppress("DEPRECATION")
             Notification.Builder(this)
-                .setContentTitle("Touch Assistant")
+                .setContentTitle("ReachPoint")
                 .setContentText("Floating assistant is active")
-                .setSmallIcon(android.R.drawable.ic_menu_manage)
+                .setSmallIcon(R.drawable.ic_tile_circle_dot)
                 .setOngoing(true)
                 .build()
         }
